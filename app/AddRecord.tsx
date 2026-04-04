@@ -10,10 +10,13 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { LanguageSelector } from "./components/language-selector";
+import { useLocalization } from "./utils/LocalizationProvider";
 import { HealthRecord, saveHealthRecord } from "./utils/storage";
 
 export default function AddRecord() {
   const navigation = useNavigation<any>();
+  const { t } = useLocalization();
   const [age, setAge] = useState("");
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
@@ -50,18 +53,19 @@ export default function AddRecord() {
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-2xl font-bold text-white">Add Health Record</Text>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Growth")}
-              className="bg-white/20 p-2 rounded-xl"
-              activeOpacity={0.8}
-            >
-              <X color="#FFFFFF" size={24} />
-            </TouchableOpacity>
+            <Text className="text-2xl font-bold text-white">{t("addHealthRecord")}</Text>
+            <View className="flex-row items-center gap-3">
+              <LanguageSelector />
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Growth")}
+                className="bg-white/20 p-2 rounded-xl"
+                activeOpacity={0.8}
+              >
+                <X color="#FFFFFF" size={24} />
+              </TouchableOpacity>
+            </View>
           </View>
-          <Text className="text-white/90 text-base">
-            Enter your child&apos;s current measurements
-          </Text>
+          <Text className="text-white/90 text-base">{t("enterMeasurements")}</Text>
         </View>
 
         <View className="px-6 py-8">
@@ -78,8 +82,8 @@ export default function AddRecord() {
                   <Calendar color="#FF9F6E" size={24} />
                 </View>
                 <View>
-                  <Text className="text-base font-semibold text-[#2F3A3A]">Age</Text>
-                  <Text className="text-sm text-[#7A8A8A]">In years</Text>
+                  <Text className="text-base font-semibold text-[#2F3A3A]">{t("age")}</Text>
+                  <Text className="text-sm text-[#7A8A8A]">{t("ageHint")}</Text>
                 </View>
               </View>
               <TextInput
@@ -98,8 +102,8 @@ export default function AddRecord() {
                   <Ruler color="#7EC8E3" size={24} />
                 </View>
                 <View>
-                  <Text className="text-base font-semibold text-[#2F3A3A]">Height</Text>
-                  <Text className="text-sm text-[#7A8A8A]">In centimeters (cm)</Text>
+                  <Text className="text-base font-semibold text-[#2F3A3A]">{t("height")}</Text>
+                  <Text className="text-sm text-[#7A8A8A]">{t("heightHint")}</Text>
                 </View>
               </View>
               <TextInput
@@ -118,8 +122,8 @@ export default function AddRecord() {
                   <Weight color="#4CAF7A" size={24} />
                 </View>
                 <View>
-                  <Text className="text-base font-semibold text-[#2F3A3A]">Weight</Text>
-                  <Text className="text-sm text-[#7A8A8A]">In kilograms (kg)</Text>
+                  <Text className="text-base font-semibold text-[#2F3A3A]">{t("weight")}</Text>
+                  <Text className="text-sm text-[#7A8A8A]">{t("weightHint")}</Text>
                 </View>
               </View>
               <TextInput
@@ -143,7 +147,7 @@ export default function AddRecord() {
                 style={{ color: isFormValid ? "#FFFFFF" : "#9CA3AF" }}
                 className="text-lg font-semibold"
               >
-                Save Record
+                {t("saveRecord")}
               </Text>
               <ArrowRight color={isFormValid ? "#FFFFFF" : "#9CA3AF"} size={20} />
             </TouchableOpacity>
@@ -151,7 +155,7 @@ export default function AddRecord() {
 
           <View className="mt-6 p-4 bg-[#EAF6FB] rounded-xl">
             <Text className="text-sm text-[#7A8A8A] text-center">
-              💡 All data is stored locally on your device and kept private
+              {t("dataStoredPrivate")}
             </Text>
           </View>
         </View>

@@ -10,9 +10,12 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { LanguageSelector } from "./components/language-selector";
+import { useLocalization } from "./utils/LocalizationProvider";
 
 export default function Check() {
   const navigation = useNavigation<any>();
+  const { t } = useLocalization();
   const [age, setAge] = useState("");
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
@@ -30,10 +33,11 @@ export default function Check() {
     >
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg">
-          <Text className="text-2xl font-bold text-white mb-2">Health Check</Text>
-          <Text className="text-white/90 text-base">
-            Enter your child&apos;s details for a quick health assessment
-          </Text>
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-2xl font-bold text-white">{t("healthCheck")}</Text>
+            <LanguageSelector />
+          </View>
+          <Text className="text-white/90 text-base">{t("quickAssessment")}</Text>
         </View>
 
         <View className="px-6 py-8">
@@ -50,8 +54,8 @@ export default function Check() {
                   <Baby color="#7C3AED" size={24} />
                 </View>
                 <View>
-                  <Text className="text-base font-semibold text-gray-900">Age</Text>
-                  <Text className="text-sm text-gray-500">In years</Text>
+                  <Text className="text-base font-semibold text-gray-900">{t("age")}</Text>
+                  <Text className="text-sm text-gray-500">{t("ageHint")}</Text>
                 </View>
               </View>
               <TextInput
@@ -70,8 +74,8 @@ export default function Check() {
                   <Ruler color="#2563EB" size={24} />
                 </View>
                 <View>
-                  <Text className="text-base font-semibold text-gray-900">Height</Text>
-                  <Text className="text-sm text-gray-500">In centimeters (cm)</Text>
+                  <Text className="text-base font-semibold text-gray-900">{t("height")}</Text>
+                  <Text className="text-sm text-gray-500">{t("heightHint")}</Text>
                 </View>
               </View>
               <TextInput
@@ -90,8 +94,8 @@ export default function Check() {
                   <Weight color="#16A34A" size={24} />
                 </View>
                 <View>
-                  <Text className="text-base font-semibold text-gray-900">Weight</Text>
-                  <Text className="text-sm text-gray-500">In kilograms (kg)</Text>
+                  <Text className="text-base font-semibold text-gray-900">{t("weight")}</Text>
+                  <Text className="text-sm text-gray-500">{t("weightHint")}</Text>
                 </View>
               </View>
               <TextInput
@@ -112,7 +116,7 @@ export default function Check() {
               activeOpacity={0.8}
             >
               <Text className="text-lg font-semibold" style={{ color: isFormValid ? "#FFFFFF" : "#9CA3AF" }}>
-                Check Result
+                {t("checkResultButton")}
               </Text>
               <ArrowRight color={isFormValid ? "#FFFFFF" : "#9CA3AF"} size={20} />
             </TouchableOpacity>

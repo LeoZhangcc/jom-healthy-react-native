@@ -1,9 +1,12 @@
 import { useNavigation } from "@react-navigation/native";
 import { AlertCircle, ArrowLeft, Candy, CheckCircle, Droplet, Flame } from "lucide-react-native";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { LanguageSelector } from "./components/language-selector";
+import { useLocalization } from "./utils/LocalizationProvider";
 
 export default function FoodResult() {
   const navigation = useNavigation<any>();
+  const { t } = useLocalization();
 
   const foodData = {
     name: "Nasi Lemak",
@@ -24,25 +27,25 @@ export default function FoodResult() {
       icon: CheckCircle,
       color: "#6BCB77",
       bgColor: "#EAF7F0",
-      label: "Healthy Choice",
+      label: t("healthyChoice"),
       emoji: "✅",
-      description: "This food is nutritious and good for your child!",
+      description: t("nutritiousDescription"),
     },
     moderate: {
       icon: AlertCircle,
       color: "#FFD166",
       bgColor: "#FFF9E6",
-      label: "Moderate",
+      label: t("moderate"),
       emoji: "⚠️",
-      description: "Okay in moderation. Balance with healthier options.",
+      description: t("moderateDescription"),
     },
     unhealthy: {
       icon: AlertCircle,
       color: "#FF8C8C",
       bgColor: "#FFE8E8",
-      label: "High in Sugar/Fat",
+      label: t("highSugarFat"),
       emoji: "❌",
-      description: "Try to limit this food. Choose healthier alternatives.",
+      description: t("unhealthyDescription"),
     },
   };
 
@@ -85,15 +88,18 @@ export default function FoodResult() {
       contentContainerStyle={{ paddingBottom: 32 }}
     >
       <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg relative">
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Home")}
-          className="absolute top-12 left-6 w-10 h-10 rounded-full items-center justify-center"
-          style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
-          activeOpacity={0.8}
-        >
-          <ArrowLeft color="#FFFFFF" size={20} />
-        </TouchableOpacity>
-        <Text className="text-2xl font-bold text-white mb-2 text-center">Food Analysis</Text>
+        <View className="flex-row items-center justify-between mb-2">
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Home")}
+            className="w-10 h-10 rounded-full items-center justify-center"
+            style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+            activeOpacity={0.8}
+          >
+            <ArrowLeft color="#FFFFFF" size={20} />
+          </TouchableOpacity>
+          <Text className="text-2xl font-bold text-white flex-1 text-center">{t("foodAnalysis")}</Text>
+          <LanguageSelector />
+        </View>
       </View>
 
       <View className="px-6 py-6">
@@ -125,7 +131,7 @@ export default function FoodResult() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-lg font-semibold text-[#2F3A3A] mb-4">Nutrition Facts</Text>
+          <Text className="text-lg font-semibold text-[#2F3A3A] mb-4">{t("nutritionFacts")}</Text>
           <View className="flex-row flex-wrap justify-between gap-3 mb-3">
             {nutritionInfo.map((item, index) => (
               <View
@@ -164,7 +170,7 @@ export default function FoodResult() {
         </View>
 
         <View className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <Text className="font-semibold text-[#2F3A3A] mb-4">💡 Tips for Parents</Text>
+          <Text className="font-semibold text-[#2F3A3A] mb-4">{t("tipsForParents")}</Text>
           {tips.map((tip, index) => (
             <View key={index} className="flex-row items-start gap-3 mb-3">
               <View className="w-6 h-6 bg-[#EAF7F0] rounded-full items-center justify-center">
@@ -180,12 +186,12 @@ export default function FoodResult() {
           className="w-full bg-[#4CAF7A] py-5 rounded-2xl items-center justify-center"
           activeOpacity={0.8}
         >
-          <Text className="text-white font-semibold text-lg">Check Another Food</Text>
+          <Text className="text-white font-semibold text-lg">{t("checkAnotherFood")}</Text>
         </TouchableOpacity>
 
         <View className="mt-6 p-4 bg-[#EAF6FB] rounded-xl">
           <Text className="text-xs text-[#7A8A8A] text-center leading-relaxed">
-            ℹ️ Nutrition values are approximate. Actual values may vary by preparation and serving size.
+            {t("nutritionDisclaimer")}
           </Text>
         </View>
       </View>

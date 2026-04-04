@@ -26,11 +26,14 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { LanguageSelector } from "./components/language-selector";
+import { useLocalization } from "./utils/LocalizationProvider";
 
 const heroImage = require("../assets/images/react-logo.png");
 
 export default function Home() {
   const navigation = useNavigation<any>();
+  const { t } = useLocalization();
   const [showCheckForm, setShowCheckForm] = useState(false);
   const [age, setAge] = useState("");
   const [height, setHeight] = useState("");
@@ -135,13 +138,14 @@ export default function Home() {
     >
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg">
-          <Text className="text-2xl font-bold text-white mb-2">JomHealthy</Text>
-          <Text className="text-white/90 text-lg mt-3">
-            Hi! Let&apos;s keep your child healthy today ✨
-          </Text>
+          <View className="flex-row items-start justify-between mb-2">
+            <Text className="text-2xl font-bold text-white">{t("appTitle")}</Text>
+            <LanguageSelector />
+          </View>
+          <Text className="text-white/90 text-lg mt-3">{t("greeting")}</Text>
         </View>
 
-        <View className="px-6 -mt-4 mb-6">
+        <View className="px-6 mb-6">
           <View className="bg-white rounded-2xl shadow-xl overflow-hidden">
             <View className="px-4 py-4">
               <View className="flex-row items-center gap-3">
@@ -149,7 +153,7 @@ export default function Home() {
                 <TextInput
                   value={foodSearchQuery}
                   onChangeText={setFoodSearchQuery}
-                  placeholder="Search food or scan to check"
+                  placeholder={t("searchPlaceholder")}
                   className="flex-1 text-base py-3"
                   placeholderTextColor="#9CA3AF"
                 />
@@ -166,7 +170,7 @@ export default function Home() {
                 className="mt-4 bg-[#4CAF7A] rounded-2xl py-4 items-center justify-center"
                 activeOpacity={0.8}
               >
-                <Text className="text-white font-semibold">Search Food</Text>
+                <Text className="text-white font-semibold">{t("searchFood")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -177,7 +181,7 @@ export default function Home() {
             <View className="bg-white rounded-2xl shadow-xl overflow-hidden">
               <Image source={{ uri: selectedImage }} className="w-full h-56" resizeMode="cover" />
               <View className="p-4">
-                <Text className="text-base font-semibold text-[#2F3A3A] mb-2">Selected photo</Text>
+                <Text className="text-base font-semibold text-[#2F3A3A] mb-2">{t("selectedPhotoLabel")}</Text>
                 <Text className="text-sm text-[#7A8A8A] mb-3">You can retake or upload a different photo.</Text>
                 <View className="flex-row gap-3">
                   <TouchableOpacity
@@ -185,14 +189,14 @@ export default function Home() {
                     className="flex-1 bg-[#4CAF7A] py-3 rounded-2xl items-center justify-center"
                     activeOpacity={0.8}
                   >
-                    <Text className="text-white font-semibold">Retake</Text>
+                    <Text className="text-white font-semibold">{t("retake")}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => setSelectedImage(null)}
                     className="flex-1 border border-[#D1D5DB] py-3 rounded-2xl items-center justify-center"
                     activeOpacity={0.8}
                   >
-                    <Text className="text-[#475569] font-semibold">Remove</Text>
+                    <Text className="text-[#475569] font-semibold">{t("remove")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -204,7 +208,7 @@ export default function Home() {
           <View className="flex-1 bg-black/40 justify-end">
             <View className="bg-white rounded-t-3xl p-6">
               <View className="flex-row items-center justify-between mb-6">
-                <Text className="text-xl font-semibold text-[#2F3A3A]">Choose an option</Text>
+                <Text className="text-xl font-semibold text-[#2F3A3A]">{t("chooseOption")}</Text>
                 <TouchableOpacity onPress={() => setShowCameraOptions(false)}>
                   <X color="#475569" size={22} />
                 </TouchableOpacity>
@@ -216,7 +220,7 @@ export default function Home() {
               >
                 <View className="flex-row items-center gap-3">
                   <Camera color="#FFFFFF" size={20} />
-                  <Text className="text-white font-semibold">Take a photo</Text>
+                  <Text className="text-white font-semibold">{t("takePhoto")}</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
@@ -224,7 +228,7 @@ export default function Home() {
                 className="w-full border-2 border-[#4CAF7A] py-5 rounded-2xl items-center justify-center"
                 activeOpacity={0.8}
               >
-                <Text className="text-[#4CAF7A] font-semibold">Upload from gallery</Text>
+                <Text className="text-[#4CAF7A] font-semibold">{t("uploadGallery")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -241,8 +245,8 @@ export default function Home() {
               <Baby color="#22C55E" size={28} />
             </View>
             <View className="flex-1">
-              <Text className="text-xl font-semibold text-[#2F3A3A] mb-1">Check My Child&apos;s Health</Text>
-              <Text className="text-[#7A8A8A] text-sm">Quick health assessment</Text>
+              <Text className="text-xl font-semibold text-[#2F3A3A] mb-1">{t("checkHealthTitle")}</Text>
+              <Text className="text-[#7A8A8A] text-sm">{t("checkHealthSubtitle")}</Text>
             </View>
             {showCheckForm ? (
               <ChevronUp color="#475569" size={24} />

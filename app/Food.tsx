@@ -10,9 +10,12 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { LanguageSelector } from "./components/language-selector";
+import { useLocalization } from "./utils/LocalizationProvider";
 
 export default function Food() {
   const navigation = useNavigation<any>();
+  const { t } = useLocalization();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handlePhotoUpload = () => {
@@ -41,11 +44,14 @@ export default function Food() {
     >
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg">
-          <View className="flex-row items-center gap-2 mb-2">
-            <UtensilsCrossed color="#FFFFFF" size={26} />
-            <Text className="text-2xl font-bold text-white">Food</Text>
+          <View className="flex-row items-center justify-between mb-2">
+            <View className="flex-row items-center gap-2">
+              <UtensilsCrossed color="#FFFFFF" size={26} />
+              <Text className="text-2xl font-bold text-white">{t("foodTitle")}</Text>
+            </View>
+            <LanguageSelector />
           </View>
-          <Text className="text-white/95 text-base">Check nutrition info for any food</Text>
+          <Text className="text-white/95 text-base">{t("checkNutrition")}</Text>
         </View>
 
         <View className="px-6 py-8">
@@ -54,9 +60,9 @@ export default function Food() {
               <View className="w-32 h-32 rounded-full items-center justify-center mb-5 shadow-lg" style={{ backgroundColor: "#EAF7F0" }}>
                 <Camera color="#4CAF7A" size={40} />
               </View>
-              <Text className="text-xl font-semibold text-[#2F3A3A] mb-2">Take a Photo</Text>
+              <Text className="text-xl font-semibold text-[#2F3A3A] mb-2">{t("takePhotoTitle")}</Text>
               <Text className="text-[#7A8A8A] mb-6 leading-relaxed text-center">
-                Point your camera at any food to get instant nutrition info
+                {t("takePhotoSubtitle")}
               </Text>
               <TouchableOpacity
                 onPress={handlePhotoUpload}
@@ -65,7 +71,7 @@ export default function Food() {
               >
                 <View className="flex-row items-center gap-3">
                   <Upload color="#FFFFFF" size={20} />
-                  <Text className="text-white font-semibold text-lg">Upload Photo</Text>
+                  <Text className="text-white font-semibold text-lg">{t("uploadPhoto")}</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -73,14 +79,14 @@ export default function Food() {
 
           <View className="flex-row items-center gap-3 mb-6">
             <View className="flex-1 h-px bg-gray-300" />
-            <Text className="text-sm text-[#7A8A8A] font-medium">OR</Text>
+            <Text className="text-sm text-[#7A8A8A] font-medium">{t("orLabel")}</Text>
             <View className="flex-1 h-px bg-gray-300" />
           </View>
 
           <View className="bg-white rounded-2xl shadow-lg p-6 mb-6">
             <View className="flex-row items-center gap-2 mb-4">
               <Search color="#4CAF7A" size={18} />
-              <Text className="font-semibold text-[#2F3A3A]">Search Food</Text>
+              <Text className="font-semibold text-[#2F3A3A]">{t("searchFood")}</Text>
             </View>
             <View className="relative">
               <TextInput
@@ -103,7 +109,7 @@ export default function Food() {
           <View className="mb-6">
             <View className="flex-row items-center gap-2 mb-4">
               <Sparkles color="#FFD166" size={20} />
-              <Text className="text-lg font-semibold text-[#2F3A3A]">Popular Foods</Text>
+              <Text className="text-lg font-semibold text-[#2F3A3A]">{t("popularFoods")}</Text>
             </View>
             <View className="flex-row flex-wrap justify-between">
               {popularFoods.map((food, index) => (
@@ -130,7 +136,7 @@ export default function Food() {
             <View className="flex-row gap-3 items-start">
               <Apple color="#4CAF7A" size={18} />
               <Text className="text-sm text-[#2F3A3A] leading-relaxed">
-                <Text className="font-semibold">Snap a photo or search</Text> to learn about calories, sugar, and nutritional value!
+                {t("snapSearchInfo")}
               </Text>
             </View>
           </View>

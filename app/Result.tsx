@@ -9,6 +9,8 @@ import {
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { LanguageSelector } from "./components/language-selector";
+import { useLocalization } from "./utils/LocalizationProvider";
 
 type HealthStatus = "healthy" | "underweight" | "overweight";
 
@@ -59,6 +61,7 @@ const statusConfigs: Record<HealthStatus, StatusConfig> = {
 
 export default function Result() {
   const navigation = useNavigation<any>();
+  const { t } = useLocalization();
   const route = useRoute<any>();
   const params = route.params as ChildData | undefined;
   const [childData, setChildData] = useState<ChildData | null>(null);
@@ -115,9 +118,15 @@ export default function Result() {
       contentContainerStyle={{ paddingBottom: 32 }}
     >
       <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg">
-        <Text className="text-2xl font-bold text-white mb-2">Health Result</Text>
+        <View className="flex-row items-start justify-between mb-2">
+          <Text className="text-2xl font-bold text-white">{t("healthResultTitle")}</Text>
+          <LanguageSelector />
+        </View>
         <Text className="text-white/90 text-base">
-          Based on age {childData.age} years, height {childData.height}cm, weight {childData.weight}kg
+          {t("assessmentDetails")
+            .replace("{age}", childData.age)
+            .replace("{height}", childData.height)
+            .replace("{weight}", childData.weight)}
         </Text>
       </View>
 
@@ -156,7 +165,7 @@ export default function Result() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-lg font-semibold text-[#2F3A3A] mb-4">What you can do:</Text>
+          <Text className="text-lg font-semibold text-[#2F3A3A] mb-4">{t("whatYouCanDo")}</Text>
           <View className="space-y-3">
             {recommendations.map((rec, index) => (
               <View
@@ -184,20 +193,20 @@ export default function Result() {
             className="w-full bg-[#4CAF7A] py-5 rounded-2xl items-center justify-center"
             activeOpacity={0.8}
           >
-            <Text className="text-white font-semibold text-lg">Track Growth Over Time</Text>
+            <Text className="text-white font-semibold text-lg">{t("trackGrowthButton")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate("Home")}
             className="w-full bg-white py-5 rounded-2xl items-center justify-center"
             activeOpacity={0.8}
           >
-            <Text className="text-[#2F3A3A] font-semibold text-lg">Back to Home</Text>
+            <Text className="text-[#2F3A3A] font-semibold text-lg">{t("backToHome")}</Text>
           </TouchableOpacity>
         </View>
 
         <View className="mt-6 p-4 bg-[#EAF6FB] rounded-xl">
           <Text className="text-xs text-[#7A8A8A] text-center leading-relaxed">
-            ℹ️ This is a general assessment. For medical advice, please consult a healthcare professional.
+            {t("generalDisclaimer")}
           </Text>
         </View>
       </View>
