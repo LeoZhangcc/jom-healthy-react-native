@@ -1,4 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
 import {
     Activity,
     Baby,
@@ -36,6 +37,7 @@ export default function Home() {
   const [weight, setWeight] = useState("");
   const [showCameraOptions, setShowCameraOptions] = useState(false);
   const [foodSearchQuery, setFoodSearchQuery] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const isFormValid = age !== "" && height !== "" && weight !== "";
 
@@ -49,9 +51,41 @@ export default function Home() {
     }
   };
 
-  const handleCameraOption = () => {
+  const askForPermission = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    return status === "granted";
+  };
+
+  const openCameraAsync = async () => {
+    const hasPermission = await askForPermission();
+    if (!hasPermission) {
+      alert("Camera permissions are required to take a photo.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
     setShowCameraOptions(false);
-    navigation.navigate("FoodResult");
+    if (!result.canceled && result.assets.length > 0) {
+      setSelectedImage(result.assets[0].uri);
+    }
+  };
+
+  const openImageLibraryAsync = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
+    setShowCameraOptions(false);
+    if (!result.canceled && result.assets.length > 0) {
+      setSelectedImage(result.assets[0].uri);
+    }
   };
 
   const healthFacts = [
@@ -138,6 +172,34 @@ export default function Home() {
           </View>
         </View>
 
+        {selectedImage ? (
+          <View className="px-6 mb-6">
+            <View className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <Image source={{ uri: selectedImage }} className="w-full h-56" resizeMode="cover" />
+              <View className="p-4">
+                <Text className="text-base font-semibold text-[#2F3A3A] mb-2">Selected photo</Text>
+                <Text className="text-sm text-[#7A8A8A] mb-3">You can retake or upload a different photo.</Text>
+                <View className="flex-row gap-3">
+                  <TouchableOpacity
+                    onPress={() => setShowCameraOptions(true)}
+                    className="flex-1 bg-[#4CAF7A] py-3 rounded-2xl items-center justify-center"
+                    activeOpacity={0.8}
+                  >
+                    <Text className="text-white font-semibold">Retake</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setSelectedImage(null)}
+                    className="flex-1 border border-[#D1D5DB] py-3 rounded-2xl items-center justify-center"
+                    activeOpacity={0.8}
+                  >
+                    <Text className="text-[#475569] font-semibold">Remove</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        ) : null}
+
         <Modal visible={showCameraOptions} transparent animationType="slide">
           <View className="flex-1 bg-black/40 justify-end">
             <View className="bg-white rounded-t-3xl p-6">
@@ -148,7 +210,7 @@ export default function Home() {
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
-                onPress={handleCameraOption}
+                onPress={openCameraAsync}
                 className="w-full bg-[#4CAF7A] py-5 rounded-2xl items-center justify-center mb-3"
                 activeOpacity={0.8}
               >
@@ -158,7 +220,7 @@ export default function Home() {
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={handleCameraOption}
+                onPress={openImageLibraryAsync}
                 className="w-full border-2 border-[#4CAF7A] py-5 rounded-2xl items-center justify-center"
                 activeOpacity={0.8}
               >
