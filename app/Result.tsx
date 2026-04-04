@@ -29,36 +29,6 @@ interface StatusConfig {
   emoji: string;
 }
 
-const statusConfigs: Record<HealthStatus, StatusConfig> = {
-  healthy: {
-    icon: CheckCircle,
-    color: "#6BCB77",
-    bgColor: "#EAF7F0",
-    title: "Healthy Weight",
-    description:
-      "Great job! Your child is within a healthy weight range. Keep up the good nutrition and active lifestyle!",
-    emoji: "🎉",
-  },
-  underweight: {
-    icon: AlertCircle,
-    color: "#FFD166",
-    bgColor: "#FFF9E6",
-    title: "Underweight",
-    description:
-      "Your child may benefit from more nutritious meals. Consult with a healthcare provider for personalized advice.",
-    emoji: "💛",
-  },
-  overweight: {
-    icon: AlertTriangle,
-    color: "#FF8C8C",
-    bgColor: "#FFE8E8",
-    title: "Above Healthy Weight",
-    description:
-      "Your child may benefit from more physical activity and balanced meals. Small changes can make a big difference!",
-    emoji: "🧡",
-  },
-};
-
 export default function Result() {
   const navigation = useNavigation<any>();
   const { t } = useLocalization();
@@ -66,6 +36,33 @@ export default function Result() {
   const params = route.params as ChildData | undefined;
   const [childData, setChildData] = useState<ChildData | null>(null);
   const [healthStatus, setHealthStatus] = useState<HealthStatus>("healthy");
+
+  const statusConfigs: Record<HealthStatus, StatusConfig> = {
+    healthy: {
+      icon: CheckCircle,
+      color: "#6BCB77",
+      bgColor: "#EAF7F0",
+      title: t("growthStatusHealthyTitle"),
+      description: t("growthStatusHealthyDescription"),
+      emoji: "🎉",
+    },
+    underweight: {
+      icon: AlertCircle,
+      color: "#FFD166",
+      bgColor: "#FFF9E6",
+      title: t("growthStatusUnderweightTitle"),
+      description: t("growthStatusUnderweightDescription"),
+      emoji: "💛",
+    },
+    overweight: {
+      icon: AlertTriangle,
+      color: "#FF8C8C",
+      bgColor: "#FFE8E8",
+      title: t("growthStatusOverweightTitle"),
+      description: t("growthStatusOverweightDescription"),
+      emoji: "🧡",
+    },
+  };
 
   useEffect(() => {
     if (!params?.age || !params?.height || !params?.weight) {
@@ -97,18 +94,18 @@ export default function Result() {
   const recommendations = [
     {
       icon: Apple,
-      title: "Eat more fruits & vegetables",
-      subtitle: "5 servings per day",
+      title: t("recommendation1Title"),
+      subtitle: t("recommendation1Subtitle"),
     },
     {
       icon: Activity,
-      title: "Stay active daily",
-      subtitle: "30-60 minutes of play",
+      title: t("recommendation2Title"),
+      subtitle: t("recommendation2Subtitle"),
     },
     {
       icon: Heart,
-      title: "Regular check-ups",
-      subtitle: "Visit your pediatrician",
+      title: t("recommendation3Title"),
+      subtitle: t("recommendation3Subtitle"),
     },
   ];
 

@@ -27,7 +27,7 @@ export default function Food() {
   const handleSearch = () => {
     const query = searchQuery.trim();
     if (!query) {
-      Alert.alert("Please enter a food name to search.");
+      Alert.alert(t("enterFoodName"));
       return;
     }
 
@@ -35,12 +35,12 @@ export default function Food() {
   };
 
   const popularFoods = [
-    { name: "Nasi Lemak", emoji: "🍛", color: "#FFE8DC" },
-    { name: "Roti Canai", emoji: "🫓", color: "#EAF6FB" },
-    { name: "Banana", emoji: "🍌", color: "#FFF9E6" },
-    { name: "Apple", emoji: "🍎", color: "#FFE8E8" },
-    { name: "Milo", emoji: "🥤", color: "#EAF7F0" },
-    { name: "Chicken Rice", emoji: "🍗", color: "#EAF6FB" },
+    { name: t("popularFoodNasiLemak"), emoji: "🍛", color: "#FFE8DC" },
+    { name: t("popularFoodRotiCanai"), emoji: "🫓", color: "#EAF6FB" },
+    { name: t("popularFoodBanana"), emoji: "🍌", color: "#FFF9E6" },
+    { name: t("popularFoodApple"), emoji: "🍎", color: "#FFE8E8" },
+    { name: t("popularFoodMilo"), emoji: "🥤", color: "#EAF7F0" },
+    { name: t("popularFoodChickenRice"), emoji: "🍗", color: "#EAF6FB" },
   ];
 
   return (
@@ -98,7 +98,7 @@ export default function Food() {
               <TextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                placeholder="e.g. Nasi Lemak"
+                placeholder={t("exampleFoodSearch")}
                 placeholderTextColor="#6B7280"
                 className="w-full px-5 py-4 pr-12 text-base bg-gray-50 border-2 border-gray-200 rounded-xl"
               />

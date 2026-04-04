@@ -14,35 +14,35 @@ function getBMIStatus(bmi: number): BMIStatus {
   return "healthy";
 }
 
-const statusConfigs = {
-  underweight: {
-    title: "Underweight",
-    color: "#FFD166",
-    backgroundColor: "#FFF9E6",
-    emoji: "💛",
-    description: "Your child may need more balanced meals and support from a pediatrician.",
-  },
-  healthy: {
-    title: "Growing Well",
-    color: "#6BCB77",
-    backgroundColor: "#EAF7F0",
-    emoji: "🎉",
-    description: "Your child's growth is healthy. Keep supporting daily activity and nutrition.",
-  },
-  overweight: {
-    title: "Above Healthy Weight",
-    color: "#FF8C8C",
-    backgroundColor: "#FFE8E8",
-    emoji: "🧡",
-    description: "Encourage balanced meals and active play to support healthy growth.",
-  },
-};
-
 export default function Growth() {
   const navigation = useNavigation<any>();
   const { t } = useLocalization();
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const statusConfigs = {
+    underweight: {
+      title: t("growthStatusUnderweightTitle"),
+      color: "#FFD166",
+      backgroundColor: "#FFF9E6",
+      emoji: "💛",
+      description: t("growthStatusUnderweightDescription"),
+    },
+    healthy: {
+      title: t("growthStatusHealthyTitle"),
+      color: "#6BCB77",
+      backgroundColor: "#EAF7F0",
+      emoji: "🎉",
+      description: t("growthStatusHealthyDescription"),
+    },
+    overweight: {
+      title: t("growthStatusOverweightTitle"),
+      color: "#FF8C8C",
+      backgroundColor: "#FFE8E8",
+      emoji: "🧡",
+      description: t("growthStatusOverweightDescription"),
+    },
+  };
 
   useEffect(() => {
     loadHealthRecords().then((storedRecords) => {
@@ -144,7 +144,7 @@ export default function Growth() {
               <View className="rounded-xl px-4 py-2 mt-2" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
                 <View className="flex-row items-center gap-2">
                   <Activity color="#FFFFFF" size={18} />
-                  <Text className="text-white font-semibold">BMI: {latestRecord.bmi.toFixed(1)}</Text>
+                  <Text className="text-white font-semibold">{t("bmiLabel")}: {latestRecord.bmi.toFixed(1)}</Text>
                 </View>
               </View>
             </View>
@@ -170,7 +170,7 @@ export default function Growth() {
             <View className="w-10 h-10 bg-[#FFE8DC] rounded-xl items-center justify-center mb-3">
               <Activity color="#FF9F6E" size={20} />
             </View>
-            <Text className="text-xs text-[#7A8A8A] text-center mb-1">BMI</Text>
+            <Text className="text-xs text-[#7A8A8A] text-center mb-1">{t("bmiLabel")}</Text>
             <Text className="text-base font-bold text-[#2F3A3A] text-center">{latestRecord.bmi.toFixed(1)}</Text>
           </View>
         </View>
@@ -183,7 +183,7 @@ export default function Growth() {
           {records.map((record: HealthRecord) => (
             <View key={record.id} className="mb-3 rounded-2xl border border-gray-200 p-4 bg-[#FAFBF8]">
               <Text className="text-sm text-[#7A8A8A] mb-1">{new Date(record.date).toLocaleDateString()}</Text>
-              <Text className="text-base font-semibold text-[#2F3A3A]">Height: {record.height} cm</Text>
+              <Text className="text-base font-semibold text-[#2F3A3A]">{t("heightValue").replace("{value}", record.height.toString())}</Text>
             </View>
           ))}
         </View>
@@ -196,7 +196,7 @@ export default function Growth() {
           {records.map((record: HealthRecord) => (
             <View key={record.id} className="mb-3 rounded-2xl border border-gray-200 p-4 bg-[#FAFBF8]">
               <Text className="text-sm text-[#7A8A8A] mb-1">{new Date(record.date).toLocaleDateString()}</Text>
-              <Text className="text-base font-semibold text-[#2F3A3A]">Weight: {record.weight} kg</Text>
+              <Text className="text-base font-semibold text-[#2F3A3A]">{t("weightValue").replace("{value}", record.weight.toString())}</Text>
             </View>
           ))}
         </View>

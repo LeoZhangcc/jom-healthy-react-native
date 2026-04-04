@@ -1,16 +1,13 @@
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { Animated, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { supportedLanguages } from "../utils/i18n";
 import { useLocalization } from "../utils/LocalizationProvider";
 
-const LANGUAGE_NAMES = {
-  en: "English",
-  zh: "中文",
-  ms: "Bahasa",
-};
+const LANGUAGE_NAMES = supportedLanguages;
 
 export function LanguageSelector() {
-  const { language, setLanguage } = useLocalization();
+  const { language, setLanguage, t } = useLocalization();
   const [showModal, setShowModal] = useState(false);
   const [scaleAnim] = useState(new Animated.Value(0));
 
@@ -77,7 +74,7 @@ export function LanguageSelector() {
               >
                 {/* 标题 */}
                 <Text className="text-xl font-bold text-center text-[#2F3A3A] mb-6">
-                  Select Language
+                  {t("selectLanguage")}
                 </Text>
 
                 {/* 语言选项 */}
@@ -133,7 +130,7 @@ export function LanguageSelector() {
                   activeOpacity={0.85}
                 >
                   <Text className="text-center text-[#2F3A3A] font-semibold">
-                    Done
+                    {t("done")}
                   </Text>
                 </TouchableOpacity>
               </Pressable>

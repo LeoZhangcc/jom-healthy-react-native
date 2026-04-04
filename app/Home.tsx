@@ -14,7 +14,7 @@ import {
     Weight,
     X
 } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Alert,
     Image,
@@ -30,18 +30,37 @@ import {
 import { LanguageSelector } from "./components/language-selector";
 import { useLocalization } from "./utils/LocalizationProvider";
 
+type FoodSuggestion = {
+  label: string;
+  query: string;
+};
+
 const heroImage = require("../assets/images/react-logo.png");
 
 export default function Home() {
   const navigation = useNavigation<any>();
-  const { t } = useLocalization();
+  const { t, language } = useLocalization();
   const [showCheckForm, setShowCheckForm] = useState(false);
   const [age, setAge] = useState("");
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [showCameraOptions, setShowCameraOptions] = useState(false);
   const [foodSearchQuery, setFoodSearchQuery] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<FoodSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const getLocalizedFoodName = (item: any) => {
+    if (language === "zh") {
+      return item.foodNameCn || item.foodNameOriginal || "Unknown food";
+    }
+    if (language === "ms") {
+      return item.foodNameMs || item.foodNameOriginal || "Unknown food";
+    }
+    return item.foodNameEn || item.foodNameOriginal || "Unknown food";
+  };
 
   const isFormValid = age !== "" && height !== "" && weight !== "";
 
@@ -52,26 +71,76 @@ export default function Home() {
   const handleFoodSearch = () => {
     const query = foodSearchQuery.trim();
     if (!query) {
-      Alert.alert("Please enter a food name to search.");
+      Alert.alert(t("enterFoodName"));
       return;
     }
 
     navigation.navigate("FoodResult", { query });
   };
 
+  useEffect(() => {
+    const query = foodSearchQuery.trim();
+    if (!query) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setSearchError(null);
+      setSearchLoading(false);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setSearchLoading(true);
+      setSearchError(null);
+
+      try {
+        const response = await fetch(
+          `https://jom-healthy-java-production.up.railway.app/food/getFoodNutrition?name=${encodeURIComponent(query)}`,
+          {
+            method: "POST",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Server error ${response.status}`);
+        }
+
+        const payload = await response.json();
+        const data = Array.isArray(payload.data) ? payload.data : [];
+        const trimmed = data.slice(0, 6).map((item: any) => {
+          const label = getLocalizedFoodName(item);
+          const backendQuery = item.foodNameOriginal || item.foodNameEn || item.foodNameMs || item.foodNameCn || label;
+          return {
+            label,
+            query: backendQuery,
+          };
+        });
+
+        setSuggestions(trimmed);
+        setShowSuggestions(trimmed.length > 0);
+      } catch (fetchError: any) {
+        setSearchError(fetchError?.message ?? t("unableToFetchSuggestions"));
+        setSuggestions([]);
+        setShowSuggestions(false);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [foodSearchQuery, language]);
+
   const askForPermission = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     return status === "granted";
   };
 
-  const openCameraAsync = async () => {
-    const hasPermission = await askForPermission();
-    if (!hasPermission) {
-      alert("Camera permissions are required to take a photo.");
+  const openImageLibraryAsync = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      alert(t("galleryPermissionsRequired"));
       return;
     }
-
-    const result = await ImagePicker.launchCameraAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.7,
@@ -83,8 +152,13 @@ export default function Home() {
     }
   };
 
-  const openImageLibraryAsync = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+  const openCameraAsync = async () => {
+    const hasPermission = await askForPermission();
+    if (!hasPermission) {
+      alert(t("cameraPermissionsRequired"));
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.7,
@@ -99,8 +173,8 @@ export default function Home() {
   const healthFacts = [
     {
       icon: Activity,
-      title: "1 in 5 children",
-      subtitle: "In Malaysia are overweight",
+      title: t("healthFact1Title"),
+      subtitle: t("healthFact1Subtitle"),
       color: "#F97316",
       backgroundColor: "#FFF1E0",
       type: "icon" as const,
@@ -108,16 +182,16 @@ export default function Home() {
     {
       imageUri:
         "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?fit=crop&w=400&q=80",
-      title: "Balanced nutrition",
-      subtitle: "Helps brain development",
+      title: t("healthFact2Title"),
+      subtitle: t("healthFact2Subtitle"),
       backgroundColor: "#E7F6EE",
       type: "image" as const,
     },
     {
       imageUri:
         "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?fit=crop&w=400&q=80",
-      title: "Hydration is key",
-      subtitle: "6-8 glasses of water daily",
+      title: t("healthFact3Title"),
+      subtitle: t("healthFact3Subtitle"),
       backgroundColor: "#E0F2FE",
       type: "image" as const,
     },
@@ -126,12 +200,12 @@ export default function Home() {
   const dailyTips = [
     {
       icon: Moon,
-      tip: "Encourage 30 minutes of outdoor play today",
+      tip: t("dailyTip1"),
       color: "#D97706",
     },
     {
       icon: Activity,
-      tip: "Limit screen time to 2 hours per day",
+      tip: t("dailyTip2"),
       color: "#7C3AED",
     },
   ];
@@ -177,6 +251,30 @@ export default function Home() {
               >
                 <Text className="text-white font-semibold">{t("searchFood")}</Text>
               </TouchableOpacity>
+              {showSuggestions ? (
+                <View className="mt-3 rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
+                  {searchLoading ? (
+                    <View className="p-4">
+                      <Text className="text-sm text-[#6B7280]">{t("searching")}</Text>
+                    </View>
+                  ) : searchError ? (
+                    <View className="p-4">
+                      <Text className="text-sm text-[#EF4444]">{searchError}</Text>
+                    </View>
+                  ) : (
+                    suggestions.map((item, index) => (
+                      <TouchableOpacity
+                        key={`${item.label}-${index}`}
+                        onPress={() => navigation.navigate("FoodResult", { query: item.query })}
+                        className="px-4 py-3 border-b border-[#E5E7EB]"
+                        activeOpacity={0.8}
+                      >
+                        <Text className="text-base text-[#111827]">{item.label}</Text>
+                      </TouchableOpacity>
+                    ))
+                  )}
+                </View>
+              ) : null}
             </View>
           </View>
         </View>
@@ -187,7 +285,7 @@ export default function Home() {
               <Image source={{ uri: selectedImage }} className="w-full h-56" resizeMode="cover" />
               <View className="p-4">
                 <Text className="text-base font-semibold text-[#2F3A3A] mb-2">{t("selectedPhotoLabel")}</Text>
-                <Text className="text-sm text-[#7A8A8A] mb-3">You can retake or upload a different photo.</Text>
+                <Text className="text-sm text-[#7A8A8A] mb-3">{t("selectedPhotoHint")}</Text>
                 <View className="flex-row gap-3">
                   <TouchableOpacity
                     onPress={() => setShowCameraOptions(true)}
@@ -269,15 +367,15 @@ export default function Home() {
                       <Baby color="#F97316" size={20} />
                     </View>
                     <View>
-                      <Text className="text-sm font-semibold text-[#2F3A3A]">Age</Text>
-                      <Text className="text-xs text-[#7A8A8A]">In years</Text>
+                      <Text className="text-sm font-semibold text-[#2F3A3A]">{t("age")}</Text>
+                      <Text className="text-xs text-[#7A8A8A]">{t("ageHint")}</Text>
                     </View>
                   </View>
                   <TextInput
                     keyboardType="numeric"
                     value={age}
                     onChangeText={setAge}
-                    placeholder="e.g. 5"
+                    placeholder={t("exampleAge")}
                     placeholderTextColor="#6B7280"
                     className="w-full px-4 py-3 text-lg bg-gray-50 border-2 border-gray-200 rounded-lg"
                   />
@@ -289,15 +387,15 @@ export default function Home() {
                       <Ruler color="#22BBF7" size={20} />
                     </View>
                     <View>
-                      <Text className="text-sm font-semibold text-[#2F3A3A]">Height</Text>
-                      <Text className="text-xs text-[#7A8A8A]">In centimeters (cm)</Text>
+                      <Text className="text-sm font-semibold text-[#2F3A3A]">{t("height")}</Text>
+                      <Text className="text-xs text-[#7A8A8A]">{t("heightHint")}</Text>
                     </View>
                   </View>
                   <TextInput
                     keyboardType="numeric"
                     value={height}
                     onChangeText={setHeight}
-                    placeholder="e.g. 110"
+                    placeholder={t("exampleHeight")}
                     placeholderTextColor="#6B7280"
                     className="w-full px-4 py-3 text-lg bg-gray-50 border-2 border-gray-200 rounded-lg"
                   />
@@ -309,15 +407,15 @@ export default function Home() {
                       <Weight color="#16A34A" size={20} />
                     </View>
                     <View>
-                      <Text className="text-sm font-semibold text-[#2F3A3A]">Weight</Text>
-                      <Text className="text-xs text-[#7A8A8A]">In kilograms (kg)</Text>
+                      <Text className="text-sm font-semibold text-[#2F3A3A]">{t("weight")}</Text>
+                      <Text className="text-xs text-[#7A8A8A]">{t("weightHint")}</Text>
                     </View>
                   </View>
                   <TextInput
                     keyboardType="numeric"
                     value={weight}
                     onChangeText={setWeight}
-                    placeholder="e.g. 18"
+                    placeholder={t("exampleWeight")}
                     placeholderTextColor="#6B7280"
                     className="w-full px-4 py-3 text-lg bg-gray-50 border-2 border-gray-200 rounded-lg"
                   />
@@ -331,12 +429,12 @@ export default function Home() {
                   activeOpacity={0.8}
                 >
                   <Text className="text-lg font-semibold" style={{ color: isFormValid ? "#FFFFFF" : "#9CA3AF" }}>
-                    Check Result
+                    {t("checkResult")}
                   </Text>
                 </TouchableOpacity>
 
                 <View className="mt-4 p-3 bg-[#EAF6FB] rounded-lg">
-                  <Text className="text-xs text-[#7A8A8A] text-center">💡 All measurements are kept private</Text>
+                  <Text className="text-xs text-[#7A8A8A] text-center">{t("allMeasurementsPrivate")}</Text>
                 </View>
               </View>
             </View>
@@ -347,14 +445,14 @@ export default function Home() {
       <View className="px-6 mb-6">
         <View className="flex-row items-center gap-2 mb-4">
           <Heart color="#EF4444" size={18} />
-          <Text className="text-lg font-semibold text-[#2F3A3A]">Health Insights</Text>
+              <Text className="text-lg font-semibold text-[#2F3A3A]">{t("healthInsights")}</Text>
         </View>
         <View className="space-y-3">
           {healthFacts.map((fact, index) => (
             <View key={index} className="bg-white rounded-2xl shadow-md p-5 flex-row items-center gap-4">
               {fact.type === "icon" ? (
                 <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: fact.backgroundColor }}>
-                  <fact.icon color={fact.color} size={24} />
+                  <Activity color={fact.color} size={24} />
                 </View>
               ) : (
                 <Image
@@ -375,13 +473,13 @@ export default function Home() {
       <View className="px-6 mb-6">
         <View className="flex-row items-center gap-2 mb-4">
           <Sparkles color="#F59E0B" size={18} />
-          <Text className="text-lg font-semibold text-[#2F3A3A]">Daily Tips for Parents</Text>
+              <Text className="text-lg font-semibold text-[#2F3A3A]">{t("dailyTipsTitle")}</Text>
         </View>
         <View className="space-y-3">
           {dailyTips.map((item, index) => (
             <View key={index} className="bg-white rounded-2xl shadow-md p-5 flex-row items-start gap-4">
               <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: "#FEF3C7" }}>
-                <item.icon color={item.color} size={20} />
+                {index === 0 ? <Moon color={item.color} size={20} /> : <Activity color={item.color} size={20} />}
               </View>
               <Text className="text-[#2F3A3A] text-base flex-1 leading-relaxed pt-1.5">{item.tip}</Text>
             </View>
@@ -393,7 +491,7 @@ export default function Home() {
         <View className="bg-[#4CAF7A] rounded-2xl overflow-hidden shadow-lg">
           <Image source={heroImage} className="w-full h-40" resizeMode="cover" />
           <View className="p-5 bg-[#4CAF7A] bg-opacity-60 -mt-16">
-            <Text className="text-white font-semibold text-base text-right">Healthy children, Happy families!</Text>
+              <Text className="text-white font-semibold text-base text-right">{t("healthyChildrenBanner")}</Text>
           </View>
         </View>
       </View>

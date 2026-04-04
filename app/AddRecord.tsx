@@ -90,7 +90,7 @@ export default function AddRecord() {
                 keyboardType="numeric"
                 value={age}
                 onChangeText={setAge}
-                placeholder="e.g. 5"
+                placeholder={t("exampleAge")}
                 placeholderTextColor="#6B7280"
                 className="w-full px-5 py-4 text-xl bg-gray-50 border-2 border-gray-200 rounded-xl"
               />
@@ -110,7 +110,7 @@ export default function AddRecord() {
                 keyboardType="numeric"
                 value={height}
                 onChangeText={setHeight}
-                placeholder="e.g. 110"
+                placeholder={t("exampleHeight")}
                 placeholderTextColor="#6B7280"
                 className="w-full px-5 py-4 text-xl bg-gray-50 border-2 border-gray-200 rounded-xl"
               />
@@ -130,7 +130,7 @@ export default function AddRecord() {
                 keyboardType="numeric"
                 value={weight}
                 onChangeText={setWeight}
-                placeholder="e.g. 18"
+                placeholder={t("exampleWeight")}
                 placeholderTextColor="#6B7280"
                 className="w-full px-5 py-4 text-xl bg-gray-50 border-2 border-gray-200 rounded-xl"
               />

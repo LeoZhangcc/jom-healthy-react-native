@@ -25,7 +25,7 @@ type FoodNutritionItem = {
 export default function FoodResult() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { t } = useLocalization();
+  const { t, language } = useLocalization();
   const query = route.params?.query ?? "Nasi Lemak";
 
   const [foodData, setFoodData] = useState<FoodNutritionItem | null>(null);
@@ -108,21 +108,21 @@ export default function FoodResult() {
   const nutritionInfo = [
     {
       icon: Flame,
-      label: "Calories",
+      label: t("calories"),
       value: foodData?.energyKcal != null ? `${foodData.energyKcal} kcal` : "—",
       color: "#FF9F6E",
       bgColor: "#FFE8DC",
     },
     {
       icon: Candy,
-      label: "Sugar",
+      label: t("sugar"),
       value: foodData?.sugarG != null ? `${foodData.sugarG}g` : "—",
       color: "#F9A8D4",
       bgColor: "#FFF0F6",
     },
     {
       icon: Droplet,
-      label: "Fat",
+      label: t("fat"),
       value: foodData?.fatG != null ? `${foodData.fatG}g` : "—",
       color: "#7EC8E3",
       bgColor: "#EAF6FB",
@@ -130,16 +130,16 @@ export default function FoodResult() {
   ];
 
   const tips = [
-    "Pair with fresh vegetables for more nutrients",
-    "Control portion size for children",
-    "Choose grilled over fried when possible",
+    t("foodTip1"),
+    t("foodTip2"),
+    t("foodTip3"),
   ];
 
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-[#FAFBF8] px-6">
         <ActivityIndicator size="large" color="#4CAF7A" />
-        <Text className="mt-4 text-base text-[#2F3A3A]">Loading nutrition info for “{query}” …</Text>
+        <Text className="mt-4 text-base text-[#2F3A3A]">{t("loadingNutritionInfo").replace("{query}", query)}</Text>
       </View>
     );
   }
@@ -165,7 +165,7 @@ export default function FoodResult() {
 
         <View className="px-6 py-6">
           <View className="bg-white rounded-3xl shadow-xl p-8 mb-6">
-            <Text className="text-lg font-semibold text-[#2F3A3A] mb-4">Unable to load nutrition data</Text>
+            <Text className="text-lg font-semibold text-[#2F3A3A] mb-4">{t("unableToLoadNutrition")}</Text>
             <Text className="text-[#7A8A8A]">{error}</Text>
           </View>
           <TouchableOpacity
@@ -173,7 +173,7 @@ export default function FoodResult() {
             className="w-full bg-[#4CAF7A] py-5 rounded-2xl items-center justify-center"
             activeOpacity={0.8}
           >
-            <Text className="text-white font-semibold text-lg">Back to Search</Text>
+            <Text className="text-white font-semibold text-lg">{t("backToSearch")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -202,7 +202,7 @@ export default function FoodResult() {
           <Text className="text-2xl font-bold text-white flex-1 text-center">{t("foodAnalysis")}</Text>
           <LanguageSelector />
         </View>
-        <Text className="text-white/90 text-sm text-center mt-2">Results for “{query}”</Text>
+        <Text className="text-white/90 text-sm text-center mt-2">{t("resultsFor").replace("{query}", query)}</Text>
       </View>
 
       <View className="px-6 py-6">
@@ -260,13 +260,13 @@ export default function FoodResult() {
           <View className="bg-white rounded-3xl shadow-md p-5">
             <View className="flex-row justify-between gap-4">
               <View className="flex-1 border-r border-[#E5E7EB] pr-4">
-                <Text className="text-xs text-[#7A8A8A] mb-1">Protein</Text>
+                <Text className="text-xs text-[#7A8A8A] mb-1">{t("protein")}</Text>
                 <Text className="text-base font-semibold text-[#2F3A3A]">
                   {foodData?.proteinG != null ? `${foodData.proteinG}g` : "—"}
                 </Text>
               </View>
               <View className="flex-1 pl-4">
-                <Text className="text-xs text-[#7A8A8A] mb-1">Carbs</Text>
+                <Text className="text-xs text-[#7A8A8A] mb-1">{t("carbs")}</Text>
                 <Text className="text-base font-semibold text-[#2F3A3A]">
                   {foodData?.carbohydrateG != null ? `${foodData.carbohydrateG}g` : "—"}
                 </Text>
