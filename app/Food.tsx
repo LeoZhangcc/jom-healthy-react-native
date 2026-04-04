@@ -2,6 +2,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Apple, Camera, Search, Sparkles, Upload, UtensilsCrossed } from "lucide-react-native";
 import { useState } from "react";
 import {
+    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -19,13 +20,18 @@ export default function Food() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handlePhotoUpload = () => {
-    navigation.navigate("FoodResult");
+    const query = searchQuery.trim() || "Nasi Lemak";
+    navigation.navigate("FoodResult", { query });
   };
 
   const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigation.navigate("FoodResult");
+    const query = searchQuery.trim();
+    if (!query) {
+      Alert.alert("Please enter a food name to search.");
+      return;
     }
+
+    navigation.navigate("FoodResult", { query });
   };
 
   const popularFoods = [
@@ -115,7 +121,7 @@ export default function Food() {
               {popularFoods.map((food, index) => (
                 <TouchableOpacity
                   key={index}
-                  onPress={() => navigation.navigate("FoodResult")}
+                  onPress={() => navigation.navigate("FoodResult", { query: food.name })}
                   className="bg-white rounded-2xl shadow-md p-5 mb-3"
                   style={{ width: "48%" }}
                   activeOpacity={0.85}

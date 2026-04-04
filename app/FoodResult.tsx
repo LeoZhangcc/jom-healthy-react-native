@@ -1,26 +1,71 @@
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { AlertCircle, ArrowLeft, Candy, CheckCircle, Droplet, Flame } from "lucide-react-native";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { LanguageSelector } from "./components/language-selector";
 import { useLocalization } from "./utils/LocalizationProvider";
 
+type FoodNutritionItem = {
+  foodNameOriginal?: string | null;
+  foodGroup?: string | null;
+  foodNameEn?: string | null;
+  foodNameCn?: string | null;
+  foodNameMs?: string | null;
+  picUrl?: string | null;
+  energyKcal?: number | null;
+  sugarG?: number | null;
+  proteinG?: number | null;
+  fatG?: number | null;
+  carbohydrateG?: number | null;
+  waterG?: number | null;
+  fibreG?: number | null;
+  sodiumNaMg?: number | null;
+};
+
 export default function FoodResult() {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const { t } = useLocalization();
+  const query = route.params?.query ?? "Nasi Lemak";
 
-  const foodData = {
-    name: "Nasi Lemak",
-    image:
-      "https://images.unsplash.com/photo-1638328740227-1c4b1627614d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwZm9vZCUyMG51dHJpdGlvbiUyMGNvbG9yZnVsfGVufDF8fHx8MTc3NTAxNjM5NXww&ixlib=rb-4.1.0&q=80&w=1080",
-    status: "moderate" as const,
-    nutrition: {
-      calories: 420,
-      sugar: 8,
-      fat: 22,
-      protein: 12,
-      carbs: 45,
-    },
-  };
+  const [foodData, setFoodData] = useState<FoodNutritionItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchNutrition() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `https://jom-healthy-java-production.up.railway.app/food/getFoodNutrition?name=${encodeURIComponent(query)}`,
+          {
+            method: "POST",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Server error ${response.status}`);
+        }
+
+        const payload = await response.json();
+        const result = Array.isArray(payload.data) ? payload.data[0] : null;
+
+        if (!result) {
+          throw new Error("No nutrition data found.");
+        }
+
+        setFoodData(result);
+      } catch (fetchError: any) {
+        setError(fetchError?.message ?? "Unable to fetch nutrition data.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchNutrition();
+  }, [query]);
 
   const statusConfig = {
     healthy: {
@@ -49,28 +94,36 @@ export default function FoodResult() {
     },
   };
 
-  const config = statusConfig[foodData.status];
+  const statusKey = foodData?.energyKcal != null
+    ? foodData.energyKcal <= 150
+      ? "healthy"
+      : foodData.energyKcal <= 300
+      ? "moderate"
+      : "unhealthy"
+    : "moderate";
+
+  const config = statusConfig[statusKey as keyof typeof statusConfig];
   const Icon = config.icon;
 
   const nutritionInfo = [
     {
       icon: Flame,
       label: "Calories",
-      value: `${foodData.nutrition.calories} kcal`,
+      value: foodData?.energyKcal != null ? `${foodData.energyKcal} kcal` : "—",
       color: "#FF9F6E",
       bgColor: "#FFE8DC",
     },
     {
       icon: Candy,
       label: "Sugar",
-      value: `${foodData.nutrition.sugar}g`,
-      color: "#FF8C8C",
-      bgColor: "#FFE8E8",
+      value: foodData?.sugarG != null ? `${foodData.sugarG}g` : "—",
+      color: "#F9A8D4",
+      bgColor: "#FFF0F6",
     },
     {
       icon: Droplet,
       label: "Fat",
-      value: `${foodData.nutrition.fat}g`,
+      value: foodData?.fatG != null ? `${foodData.fatG}g` : "—",
       color: "#7EC8E3",
       bgColor: "#EAF6FB",
     },
@@ -81,6 +134,55 @@ export default function FoodResult() {
     "Control portion size for children",
     "Choose grilled over fried when possible",
   ];
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[#FAFBF8] px-6">
+        <ActivityIndicator size="large" color="#4CAF7A" />
+        <Text className="mt-4 text-base text-[#2F3A3A]">Loading nutrition info for “{query}” …</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <ScrollView
+        className="flex-1 bg-[#FAFBF8]"
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
+        <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg relative">
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Home")}
+            className="w-10 h-10 rounded-full items-center justify-center"
+            style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+            activeOpacity={0.8}
+          >
+            <ArrowLeft color="#FFFFFF" size={20} />
+          </TouchableOpacity>
+          <Text className="text-2xl font-bold text-white flex-1 text-center">{t("foodAnalysis")}</Text>
+          <LanguageSelector />
+        </View>
+
+        <View className="px-6 py-6">
+          <View className="bg-white rounded-3xl shadow-xl p-8 mb-6">
+            <Text className="text-lg font-semibold text-[#2F3A3A] mb-4">Unable to load nutrition data</Text>
+            <Text className="text-[#7A8A8A]">{error}</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            className="w-full bg-[#4CAF7A] py-5 rounded-2xl items-center justify-center"
+            activeOpacity={0.8}
+          >
+            <Text className="text-white font-semibold text-lg">Back to Search</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  const imageUri = foodData?.picUrl ||
+    "https://images.unsplash.com/photo-1638328740227-1c4b1627614d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwZm9vZCUyMG51dHJpdGlvbiUyMGNvbG9yZnVsfGVufDF8fHx8MTc3NTAxNjM5NXww&ixlib=rb-4.1.0&q=80&w=1080";
+  const displayName = foodData?.foodNameOriginal || foodData?.foodNameEn || query;
 
   return (
     <ScrollView
@@ -100,19 +202,23 @@ export default function FoodResult() {
           <Text className="text-2xl font-bold text-white flex-1 text-center">{t("foodAnalysis")}</Text>
           <LanguageSelector />
         </View>
+        <Text className="text-white/90 text-sm text-center mt-2">Results for “{query}”</Text>
       </View>
 
       <View className="px-6 py-6">
         <View className="bg-white rounded-3xl shadow-xl overflow-hidden mb-6">
           <Image
-            source={{ uri: foodData.image }}
+            source={{ uri: imageUri }}
             className="w-full h-48"
             resizeMode="cover"
           />
           <View className="p-6">
             <Text className="text-2xl font-bold text-[#2F3A3A] mb-2 text-center">
-              {foodData.name}
+              {displayName}
             </Text>
+            {foodData?.foodGroup ? (
+              <Text className="text-sm text-[#7A8A8A] text-center">{foodData.foodGroup}</Text>
+            ) : null}
           </View>
         </View>
 
@@ -132,12 +238,12 @@ export default function FoodResult() {
 
         <View className="mb-6">
           <Text className="text-lg font-semibold text-[#2F3A3A] mb-4">{t("nutritionFacts")}</Text>
-          <View className="flex-row flex-wrap justify-between gap-3 mb-3">
+          <View className="flex-row justify-between gap-3 mb-3">
             {nutritionInfo.map((item, index) => (
               <View
                 key={index}
                 className="bg-white rounded-2xl shadow-md p-4"
-                style={{ width: "48%" }}
+                style={{ width: "31%" }}
               >
                 <View
                   className="w-10 h-10 rounded-xl items-center justify-center mb-3 mx-auto"
@@ -151,18 +257,18 @@ export default function FoodResult() {
             ))}
           </View>
 
-          <View className="bg-white rounded-2xl shadow-md p-5">
-            <View className="flex-row justify-between">
-              <View>
+          <View className="bg-white rounded-3xl shadow-md p-5">
+            <View className="flex-row justify-between gap-4">
+              <View className="flex-1 border-r border-[#E5E7EB] pr-4">
                 <Text className="text-xs text-[#7A8A8A] mb-1">Protein</Text>
                 <Text className="text-base font-semibold text-[#2F3A3A]">
-                  {foodData.nutrition.protein}g
+                  {foodData?.proteinG != null ? `${foodData.proteinG}g` : "—"}
                 </Text>
               </View>
-              <View>
+              <View className="flex-1 pl-4">
                 <Text className="text-xs text-[#7A8A8A] mb-1">Carbs</Text>
                 <Text className="text-base font-semibold text-[#2F3A3A]">
-                  {foodData.nutrition.carbs}g
+                  {foodData?.carbohydrateG != null ? `${foodData.carbohydrateG}g` : "—"}
                 </Text>
               </View>
             </View>

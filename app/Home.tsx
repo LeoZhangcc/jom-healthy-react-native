@@ -16,6 +16,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import {
+    Alert,
     Image,
     KeyboardAvoidingView,
     Modal,
@@ -49,9 +50,13 @@ export default function Home() {
   };
 
   const handleFoodSearch = () => {
-    if (foodSearchQuery.trim()) {
-      navigation.navigate("FoodResult");
+    const query = foodSearchQuery.trim();
+    if (!query) {
+      Alert.alert("Please enter a food name to search.");
+      return;
     }
+
+    navigation.navigate("FoodResult", { query });
   };
 
   const askForPermission = async () => {
