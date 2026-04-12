@@ -39,7 +39,7 @@ export default function FoodResult() {
 
       try {
         const response = await fetch(
-          `https://jom-healthy-java-production.up.railway.app/food/getFoodNutrition?name=${encodeURIComponent(query)}`,
+          `https://jom-healthy-java.onrender.com/food/getFoodNutrition?name=${encodeURIComponent(query)}`,
           {
             method: "POST",
           }
