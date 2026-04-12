@@ -180,8 +180,7 @@ export default function FoodResult() {
     );
   }
 
-  const imageUri = foodData?.picUrl ||
-    "https://images.unsplash.com/photo-1638328740227-1c4b1627614d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwZm9vZCUyMG51dHJpdGlvbiUyMGNvbG9yZnVsfGVufDF8fHx8MTc3NTAxNjM5NXww&ixlib=rb-4.1.0&q=80&w=1080";
+  const imageUri = foodData?.picUrl;
 
   const displayName = language === "zh" ? foodData?.foodNameCn : language === "ms" ? foodData?.foodNameMs : foodData?.foodNameEn || query;
 
