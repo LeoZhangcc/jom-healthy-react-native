@@ -182,7 +182,8 @@ export default function FoodResult() {
 
   const imageUri = foodData?.picUrl ||
     "https://images.unsplash.com/photo-1638328740227-1c4b1627614d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwZm9vZCUyMG51dHJpdGlvbiUyMGNvbG9yZnVsfGVufDF8fHx8MTc3NTAxNjM5NXww&ixlib=rb-4.1.0&q=80&w=1080";
-  const displayName = foodData?.foodNameOriginal || foodData?.foodNameEn || query;
+  //写代码获取当前选择的语言版本的食物名称，如果没有则使用查询词作为默认显示名称
+  const displayName = language === "zh" ? foodData?.foodNameCn : language === "ms" ? foodData?.foodNameMs : foodData?.foodNameEn || query;
 
   return (
     <ScrollView
@@ -202,7 +203,7 @@ export default function FoodResult() {
           <Text className="text-2xl font-bold text-white flex-1 text-center">{t("foodAnalysis")}</Text>
           <LanguageSelector />
         </View>
-        <Text className="text-white/90 text-sm text-center mt-2">{t("resultsFor").replace("{query}", query)}</Text>
+        {/* <Text className="text-white/90 text-sm text-center mt-2">{t("resultsFor").replace("{query}", query)}</Text> */}
       </View>
 
       <View className="px-6 py-6">
@@ -216,9 +217,9 @@ export default function FoodResult() {
             <Text className="text-2xl font-bold text-[#2F3A3A] mb-2 text-center">
               {displayName}
             </Text>
-            {foodData?.foodGroup ? (
+            {/* {foodData?.foodGroup ? (
               <Text className="text-sm text-[#7A8A8A] text-center">{foodData.foodGroup}</Text>
-            ) : null}
+            ) : null} */}
           </View>
         </View>
 
