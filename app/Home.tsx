@@ -121,7 +121,7 @@ export default function Home() {
         const data = Array.isArray(payload.data) ? payload.data : [];
         const trimmed = data.slice(0, 6).map((item: any) => {
           const label = getLocalizedFoodName(item);
-          const backendQuery = item.foodNameOriginal || item.foodNameEn || item.foodNameMs || item.foodNameCn || label;
+          const backendQuery = item.foodNameCombine ||item.foodNameOriginal || item.foodNameEn || item.foodNameMs || item.foodNameCn || label;
           return {
             label,
             query: backendQuery,
