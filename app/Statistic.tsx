@@ -122,7 +122,7 @@ const ChartCarousel: React.FC<{ rows: Status[] }> = ({ rows }) => {
 
                 return (
                     <View key={index} style={{ width: screenWidth }}>
-                        <View style={{ maxWidth: screenWidth - 52, backgroundColor: "#fff", borderRadius: 20, padding: 16, marginTop: 8, marginLeft: 4 }}>
+                        <View style={{ maxWidth: screenWidth - 48, backgroundColor: "#fff", borderRadius: 20, padding: 16, marginTop: 8 }}>
                             <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 4, textAlign: "center" }}>
                                 {cat.toUpperCase()}
                             </Text>
