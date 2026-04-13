@@ -1,80 +1,55 @@
 import { Feather, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, Linking, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, Linking, ScrollView, Text, View } from "react-native";
 import { BarChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
-const tips = [
-  "Eat at least 3 servings of vegetables daily",
-  "Eat at least 2 servings of fruit daily",
-  "Eat 3 main meals per day",
-  "Eat 1 or 2 nutritious snacks between meals",
-  "Avoid skipping meals", 
-  "Replace sugar sweetened beverages with plain water or low fat milk", 
-  "For overweight and obese children, perform 60 minutes of physical activity daily", 
-  "Consume 2 to 3 servings of milk and milk products daily", 
-  "Avoid sugary foods in between meals and close to bedtime", 
-  "Avoid sugar-sweetened beverages in between meals and close to bedtime", 
-  "Plain water is the best to quench your thirst", 
-  "Drink 6 to 8 glasses of water daily", 
-  "Eat fish daily", 
-  "Limit intake of high-fat foods to not more than 2 to 3 times per week", 
-  "Limit intake of processed meat to not more than once a week", 
-  "Limit intake of spreads to not more than 2 teaspoons daily", 
-  "Choose fresh fruits over fruit juices", 
-  "Fruit juices should not replace more than 1 serving of fruit", 
-  "Add nuts and seeds as ingredients in dishes", 
-  "pack UHT milk for children to consume at school", 
-  "At school, children should avoid sausages, nuggets and burgers"
-];
-
-// interface Health {
-//     statistic: string;
-//     sd: "Male" | "Female" | "Urban" | "Rural";
-//     ageRange: string;
-//     prevalence: number;
-// }
-
-type Health = {
+type Status = {
   statistic: string;
   sd: string;
   ageRange: string;
   prevalence: number;
 };  
 
-const ChartCarousel: React.FC<{ rows: Health[] }> = ({ rows }) => {
+
+const ChartCarousel: React.FC<{ rows: Status[] }> = ({ rows }) => {
     const scrollRef = useRef<ScrollView | null>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [tips, setTips] = useState<string[]>([]);
     const [selectedTips, setSelectedTips] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    
+    useEffect(() => {
+        async function fetchNutritionTips() {
+        try {
+            const response = await fetch(
+            "https://jom-healthy-java.onrender.com/nutritiontips"
+            );
+
+            if (!response.ok) {
+            throw new Error(`Server error ${response.status}`);
+            }
+
+            const backendArray: any[] = await response.json();
+
+            const tipsArray: string[] = backendArray
+            .filter(item => typeof item?.nutrition_tips === "string")
+            .map(item => item.nutrition_tips);
+
+            setTips(tipsArray);
+        } catch (err) {
+            console.error("Failed to fetch nutrition tips:", err);
+        } finally {
+            setLoading(false);
+        }
+        }
+
+        fetchNutritionTips();
+    }, []);
 
     const statistics = ["Underweight", "Stunting", "Thinness", "Overweight", "Obesity"];
-    // const rows: Health[] = [
-    //     { statistic: "Underweight", sd: "Urban", ageRange: "5 to 10", prevalence: 12.1 },
-    //     { statistic: "Underweight", sd: "Rural", ageRange: "5 to 10", prevalence: 13.4 },
-    //     { statistic: "Underweight", sd: "Male", ageRange: "5 to 10", prevalence: 11.1 },
-    //     { statistic: "Underweight", sd: "Female", ageRange: "5 to 10", prevalence: 13.9 },
-
-    //     { statistic: "Stunting", sd: "Urban", ageRange: "5 to 19", prevalence: 6.7 },
-    //     { statistic: "Stunting", sd: "Rural", ageRange: "5 to 19", prevalence: 11.9 },
-    //     { statistic: "Stunting", sd: "Male", ageRange: "5 to 19", prevalence: 6.5 },
-    //     { statistic: "Stunting", sd: "Female", ageRange: "5 to 19", prevalence: 9.8 }, 
-
-    //     { statistic: "Thinness", sd: "Urban", ageRange: "5 to 19", prevalence: 11.4 },
-    //     { statistic: "Thinness", sd: "Rural", ageRange: "5 to 19", prevalence: 9.1 },
-    //     { statistic: "Thinness", sd: "Male", ageRange: "5 to 19", prevalence: 11.7 },
-    //     { statistic: "Thinness", sd: "Female", ageRange: "5 to 19", prevalence: 9.8 },
-
-    //     { statistic: "Overweight", sd: "Urban", ageRange: "5 to 19", prevalence: 15.1 },
-    //     { statistic: "Overweight", sd: "Rural", ageRange: "5 to 19", prevalence: 12.6 },
-    //     { statistic: "Overweight", sd: "Male", ageRange: "5 to 19", prevalence: 15.6 },
-    //     { statistic: "Overweight", sd: "Female", ageRange: "5 to 19", prevalence: 13.1 },
-
-    //     { statistic: "Obesity", sd: "Urban", ageRange: "5 to 19", prevalence: 13.9 },
-    //     { statistic: "Obesity", sd: "Rural", ageRange: "5 to 19", prevalence: 12.9 },
-    //     { statistic: "Obesity", sd: "Male", ageRange: "5 to 19", prevalence: 16.8 },
-    //     { statistic: "Obesity", sd: "Female", ageRange: "5 to 19", prevalence: 10.2 }
-    // ];
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -88,15 +63,12 @@ const ChartCarousel: React.FC<{ rows: Health[] }> = ({ rows }) => {
     useEffect(() => {
         const shuffled = [...tips].sort(() => Math.random() - 0.5);
         setSelectedTips(shuffled.slice(0, 3));
-    }, []);
+    }, [tips]);
 
     
-    const currentStatistic = statistics[currentIndex];
-
-    const filteredRows = rows.filter(
-        (row) => row.statistic === currentStatistic
-    );
-
+    if (loading) {
+        return <ActivityIndicator style={{ marginTop: 40 }} />;
+    }
 
     return (
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ marginHorizontal: -16 }}>
@@ -115,7 +87,8 @@ const ChartCarousel: React.FC<{ rows: Health[] }> = ({ rows }) => {
               Source: Institute of Public Health Malaysia
           </Text>
 
-          <ScrollView ref={scrollRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} nestedScrollEnabled>
+          <ScrollView ref={scrollRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} nestedScrollEnabled 
+                    snapToInterval={screenWidth} snapToAlignment="center">
               {statistics.map((cat, index) => {
                   const filtered = rows.filter(r => r.statistic === cat);
 
@@ -149,8 +122,7 @@ const ChartCarousel: React.FC<{ rows: Health[] }> = ({ rows }) => {
 
                 return (
                     <View key={index} style={{ width: screenWidth, paddingHorizontal: 16 }}>
-                        <View style={{ width: screenWidth - 48, backgroundColor: "#fff", borderRadius: 20, padding: 16, marginTop: 8, shadowColor: "#000", 
-                            shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}>
+                        <View style={{ width: screenWidth - 56, backgroundColor: "#fff", borderRadius: 20, padding: 16, marginTop: 8, marginLeft: 4 }}>
                             <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 4, textAlign: "center" }}>
                                 {cat.toUpperCase()}
                             </Text>
@@ -165,7 +137,7 @@ const ChartCarousel: React.FC<{ rows: Health[] }> = ({ rows }) => {
                                 {/* Gender comparison */}
                                 <BarChart
                                     data={genderData}
-                                    width={screenWidth - 64}
+                                    width={screenWidth - 96}
                                     height={180}
                                     chartConfig={{
                                         backgroundColor: '#fff',
@@ -197,7 +169,7 @@ const ChartCarousel: React.FC<{ rows: Health[] }> = ({ rows }) => {
                                 {/* Location comparison */}
                                 <BarChart
                                     data={locationData}
-                                    width={screenWidth - 64}
+                                    width={screenWidth - 96}
                                     height={180}
                                     chartConfig={{
                                         backgroundColor: '#fff',
@@ -243,16 +215,16 @@ const ChartCarousel: React.FC<{ rows: Health[] }> = ({ rows }) => {
                 Source: Ministry of Health Malaysia
             </Text>
           <View>
-            {selectedTips.map((tip, index) => (
-              <View key={index} style={{ width: screenWidth - 48, alignSelf: 'center', marginBottom: 12, padding: 16, backgroundColor: '#fff', borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  {index % 3 === 0 && <FontAwesome5 name="apple-alt" size={20} color="red" style={{ marginRight: 8 }} />}
-                  {index % 3 === 1 && <MaterialCommunityIcons name="stethoscope" size={22} color="gray" style={{ marginRight: 8 }} />}
-                  {index % 3 === 2 && <MaterialCommunityIcons name="water" size={22} color="blue" style={{ marginRight: 8 }} />}
-                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#333', lineHeight: 18, flexShrink: 1, flexWrap: 'wrap' }}>{tip}</Text>
+                {selectedTips.map((tip, index) => (
+                <View key={index} style={{ width: screenWidth - 48, alignSelf: 'center', marginBottom: 12, padding: 16, backgroundColor: '#fff', borderRadius: 20 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    {index % 3 === 0 && <FontAwesome5 name="apple-alt" size={20} color="red" style={{ marginRight: 8 }} />}
+                    {index % 3 === 1 && <MaterialCommunityIcons name="stethoscope" size={22} color="gray" style={{ marginRight: 8 }} />}
+                    {index % 3 === 2 && <MaterialCommunityIcons name="water" size={22} color="blue" style={{ marginRight: 8 }} />}
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#333', lineHeight: 18, flexShrink: 1, flexWrap: 'wrap' }}>{tip}</Text>
+                    </View>
                 </View>
-              </View>
-            ))}
+                ))}
           </View>
         </ScrollView>
     );

@@ -36,12 +36,16 @@ type FoodSuggestion = {
   query: string;
 };
 
-type Health = {
+type Status = {
   statistic: string;
   sd: string;
   ageRange: string;
   prevalence: number;
 };  
+
+type NutritionTip = {
+  nutrition_tips: string;
+};
 
 const heroImage = require("../assets/images/react-logo.png");
 
@@ -140,7 +144,7 @@ export default function Home() {
     return () => clearTimeout(timeout);
   }, [foodSearchQuery, language]);
 
-  const [rows, setRows] = useState<Health[]>([]);
+  const [rows, setRows] = useState<Status[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -150,7 +154,7 @@ export default function Home() {
       );
       const backendData = await response.json();
 
-      const mappedRows: Health[] = backendData.map((item: any) => ({
+      const mappedRows: Status[] = backendData.map((item: any) => ({
         statistic: item.nutritional_status,
         sd: item.sociodemographics,
         ageRange: item.age_range,
