@@ -43,10 +43,6 @@ type Status = {
   prevalence: number;
 };  
 
-type NutritionTip = {
-  nutrition_tips: string;
-};
-
 const heroImage = require("../assets/images/react-logo.png");
 
 export default function Home() {
