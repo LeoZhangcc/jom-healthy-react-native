@@ -55,6 +55,8 @@ export default function Home() {
   // --- AI States ---
   const [aiLoading, setAiLoading] = useState(false);
   const [aiPrediction, setAiPrediction] = useState<{food: string, confidence: number} | null>(null);
+  const [nutritionLoading, setNutritionLoading] = useState(false);
+  const [nutritionData, setNutritionData] = useState<any>(null);
 
   const getLocalizedFoodName = (item: any) => {
     if (language === "zh") {
@@ -177,9 +179,40 @@ export default function Home() {
   };
 
   // --- AI Upload Function ---
+  const getNutritionFromAI = async (detectedFoodName: string) => {
+    setNutritionLoading(true);
+    try {
+      const response = await fetch(
+        `https://jom-healthy-java.onrender.com/food/getFoodNutrition?name=${detectedFoodName}`,
+        { method: "POST" }
+      );
+      
+      if (response.ok) {
+        const jsonResponse = await response.json();
+        if (jsonResponse.data && jsonResponse.data.length > 0) {
+          const exactFoodItem = jsonResponse.data[0];
+          setNutritionData({
+            name: exactFoodItem.foodNameEn,
+            calories: exactFoodItem.energyKcal,
+            protein: exactFoodItem.proteinG,
+            carbs: exactFoodItem.carbohydrateG,
+            fat: exactFoodItem.fatG
+          }); 
+        } else {
+          setNutritionData(null);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching from Java backend:", error);
+    } finally {
+      setNutritionLoading(false);
+    }
+  };
+
   const analyzeFoodImage = async (uri: string) => {
     setAiLoading(true);
     setAiPrediction(null);
+    setNutritionData(null); // Clear old nutrition data
     
     let formData = new FormData();
     // @ts-ignore
@@ -201,10 +234,17 @@ export default function Home() {
       let result = await response.json();
       
       if (result.success && result.predictions.length > 0) {
+        const bestPrediction = result.predictions[0];
+        
         setAiPrediction({
-          food: result.predictions[0].food,
-          confidence: result.predictions[0].confidence
+          food: bestPrediction.food,
+          confidence: bestPrediction.confidence
         });
+
+        // If confidence is high, grab the nutrition
+        if (bestPrediction.confidence >= 50) {
+          getNutritionFromAI(bestPrediction.food);
+        }
       }
     } catch (error) {
       console.error("AI API Error:", error);
@@ -358,7 +398,40 @@ export default function Home() {
 
                   </View>
                 )}
-                {/* ------------------------- */}
+
+                {nutritionLoading && (
+                  <View className="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100 flex-row items-center justify-center gap-2">
+                    <ActivityIndicator size="small" color="#F97316" />
+                    <Text className="text-orange-600 font-medium">Fetching database records...</Text>
+                  </View>
+                )}
+
+                {nutritionData && !nutritionLoading && (
+                  <View className="p-4 bg-white rounded-xl mb-4 border border-gray-200 shadow-sm">
+                    <Text className="text-sm text-[#7A8A8A] font-medium mb-3">
+                      Food: <Text className="font-bold text-[#2F3A3A]">{nutritionData.name}</Text>
+                    </Text>
+                    
+                    <View className="flex-row justify-between">
+                      <View className="items-center">
+                        <Text className="text-[#7A8A8A] text-xs mb-1">Calories</Text>
+                        <Text className="font-bold text-orange-500">{nutritionData.calories}</Text>
+                      </View>
+                      <View className="items-center">
+                        <Text className="text-[#7A8A8A] text-xs mb-1">Protein</Text>
+                        <Text className="font-bold text-blue-500">{nutritionData.protein}g</Text>
+                      </View>
+                      <View className="items-center">
+                        <Text className="text-[#7A8A8A] text-xs mb-1">Carbs</Text>
+                        <Text className="font-bold text-green-500">{nutritionData.carbs}g</Text>
+                      </View>
+                      <View className="items-center">
+                        <Text className="text-[#7A8A8A] text-xs mb-1">Fat</Text>
+                        <Text className="font-bold text-red-500">{nutritionData.fat}g</Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
 
                 <Text className="text-sm text-[#7A8A8A] mb-3">{t("selectedPhotoHint")}</Text>
                 <View className="flex-row gap-3">
