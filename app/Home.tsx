@@ -1,39 +1,47 @@
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import {
-    Activity,
-    Baby,
-    Camera,
-    ChevronDown,
-    ChevronUp,
-    Heart,
-    Moon,
-    Ruler,
-    Search,
-    Sparkles,
-    Weight,
-    X
+  Activity,
+  Baby,
+  Camera,
+  ChevronDown,
+  ChevronUp,
+  Moon,
+  Ruler,
+  Search,
+  Sparkles,
+  Weight,
+  X
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { LanguageSelector } from "./components/language-selector";
+import Statistic from "./Statistic";
 import { useLocalization } from "./utils/LocalizationProvider";
 
 type FoodSuggestion = {
   label: string;
   query: string;
 };
+
+type Health = {
+  statistic: string;
+  sd: string;
+  ageRange: string;
+  prevalence: number;
+};  
 
 const heroImage = require("../assets/images/react-logo.png");
 
@@ -128,6 +136,32 @@ export default function Home() {
 
     return () => clearTimeout(timeout);
   }, [foodSearchQuery, language]);
+
+  const [rows, setRows] = useState<Health[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchNutrition() {
+      const response = await fetch(
+        "https://jom-healthy-java.onrender.com/nutritionalstatus"
+      );
+      const backendData = await response.json();
+
+      const mappedRows: Health[] = backendData.map((item: any) => ({
+        statistic: item.nutritional_status,
+        sd: item.sociodemographics,
+        ageRange: item.age_range,
+        prevalence: Number(item.prevalence_percent),
+      }));
+
+      setRows(mappedRows);
+      setLoading(false);
+    }
+
+    fetchNutrition();
+  }, []);
+
+  if (loading) return <ActivityIndicator />;
 
   const askForPermission = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -443,31 +477,7 @@ export default function Home() {
       </View>
 
       <View className="px-6 mb-6">
-        <View className="flex-row items-center gap-2 mb-4">
-          <Heart color="#EF4444" size={18} />
-              <Text className="text-lg font-semibold text-[#2F3A3A]">{t("healthInsights")}</Text>
-        </View>
-        <View className="space-y-3">
-          {healthFacts.map((fact, index) => (
-            <View key={index} className="bg-white rounded-2xl shadow-md p-5 flex-row items-center gap-4">
-              {fact.type === "icon" ? (
-                <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: fact.backgroundColor }}>
-                  <Activity color={fact.color} size={24} />
-                </View>
-              ) : (
-                <Image
-                  source={{ uri: fact.imageUri }}
-                  className="w-14 h-14 rounded-xl"
-                  resizeMode="cover"
-                />
-              )}
-              <View className="flex-1">
-                <Text className="font-semibold text-[#2F3A3A] text-base">{fact.title}</Text>
-                <Text className="text-[#7A8A8A] text-sm">{fact.subtitle}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
+        <Statistic rows={rows}/>
       </View>
 
       <View className="px-6 mb-6">
