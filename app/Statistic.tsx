@@ -71,9 +71,9 @@ const ChartCarousel: React.FC<{ rows: Status[] }> = ({ rows }) => {
     }
 
     return (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ marginHorizontal: -16 }}>
+        <ScrollView style={{ flex: 1 }}>
           
-            <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 16, marginTop: 8, marginBottom: 2 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8, marginBottom: 2 }}>
                 <MaterialCommunityIcons name="chart-bar" size={20} color="orange" style={{ marginRight: 8 }} />
                 <Text style={{ fontSize: 20, fontWeight: '700', color: '#333' }}>
                   Malaysian Children Health Statistics
@@ -81,14 +81,14 @@ const ChartCarousel: React.FC<{ rows: Status[] }> = ({ rows }) => {
             </View>
 
           <Text
-              style={{ fontSize: 12, color: "gray", textDecorationLine: "underline", marginLeft: 16, marginBottom: 4 }}
+              style={{ fontSize: 12, color: "gray", textDecorationLine: "underline", marginBottom: 4 }}
               onPress={() => Linking.openURL("https://iku.nih.gov.my/images/nhms2024/vol2.pdf")}
               >
               Source: Institute of Public Health Malaysia
           </Text>
 
-          <ScrollView ref={scrollRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} nestedScrollEnabled 
-                    snapToInterval={screenWidth} snapToAlignment="center">
+          <ScrollView ref={scrollRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} 
+            scrollEnabled={false}>
               {statistics.map((cat, index) => {
                   const filtered = rows.filter(r => r.statistic === cat);
 
@@ -121,8 +121,8 @@ const ChartCarousel: React.FC<{ rows: Status[] }> = ({ rows }) => {
                 };
 
                 return (
-                    <View key={index} style={{ width: screenWidth, paddingHorizontal: 16 }}>
-                        <View style={{ width: screenWidth - 56, backgroundColor: "#fff", borderRadius: 20, padding: 16, marginTop: 8, marginLeft: 4 }}>
+                    <View key={index} style={{ width: screenWidth }}>
+                        <View style={{ maxWidth: screenWidth - 52, backgroundColor: "#fff", borderRadius: 20, padding: 16, marginTop: 8, marginLeft: 4 }}>
                             <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 4, textAlign: "center" }}>
                                 {cat.toUpperCase()}
                             </Text>
@@ -137,7 +137,7 @@ const ChartCarousel: React.FC<{ rows: Status[] }> = ({ rows }) => {
                                 {/* Gender comparison */}
                                 <BarChart
                                     data={genderData}
-                                    width={screenWidth - 96}
+                                    width={screenWidth - 72}
                                     height={180}
                                     chartConfig={{
                                         backgroundColor: '#fff',
@@ -169,7 +169,7 @@ const ChartCarousel: React.FC<{ rows: Status[] }> = ({ rows }) => {
                                 {/* Location comparison */}
                                 <BarChart
                                     data={locationData}
-                                    width={screenWidth - 96}
+                                    width={screenWidth - 72}
                                     height={180}
                                     chartConfig={{
                                         backgroundColor: '#fff',
@@ -204,12 +204,12 @@ const ChartCarousel: React.FC<{ rows: Status[] }> = ({ rows }) => {
               })
           }
           </ScrollView>
-          <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 16, marginTop: 32, marginBottom: 2, gap: 8 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 32, marginBottom: 2, gap: 8 }}>
             <Feather name="heart" size={20} color="red" />
             <Text style={{ fontSize: 20, fontWeight: '700', color: '#333' }}>Daily Health Tips</Text>
           </View>
           <Text
-                style={{ fontSize: 12, color: "gray", textDecorationLine: "underline", marginLeft: 16, marginBottom: 12 }}
+                style={{ fontSize: 12, color: "gray", textDecorationLine: "underline", marginBottom: 12 }}
                 onPress={() => Linking.openURL("https://www.moh.gov.my/images/04-penerbitan/rujukan/pemakanan/589d765c1b95f.pdf")}
                 >
                 Source: Ministry of Health Malaysia
