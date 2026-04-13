@@ -59,6 +59,9 @@ export default function Home() {
   const [suggestions, setSuggestions] = useState<FoodSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  // --- AI States ---
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiPrediction, setAiPrediction] = useState<{food: string, confidence: number} | null>(null);
 
   const getLocalizedFoodName = (item: any) => {
     if (language === "zh") {
@@ -102,7 +105,7 @@ export default function Home() {
 
       try {
         const response = await fetch(
-          `https://jom-healthy-java-production.up.railway.app/food/getFoodNutrition?name=${encodeURIComponent(query)}`,
+          `https://jom-healthy-java.onrender.com/food/getFoodNutrition?name=${encodeURIComponent(query)}`,
           {
             method: "POST",
           }
@@ -183,6 +186,7 @@ export default function Home() {
     setShowCameraOptions(false);
     if (!result.canceled && result.assets.length > 0) {
       setSelectedImage(result.assets[0].uri);
+      analyzeFoodImage(result.assets[0].uri);
     }
   };
 
@@ -201,6 +205,45 @@ export default function Home() {
     setShowCameraOptions(false);
     if (!result.canceled && result.assets.length > 0) {
       setSelectedImage(result.assets[0].uri);
+      analyzeFoodImage(result.assets[0].uri);
+    }
+  };
+
+  // --- AI Upload Function ---
+  const analyzeFoodImage = async (uri: string) => {
+    setAiLoading(true);
+    setAiPrediction(null);
+    
+    let formData = new FormData();
+    // @ts-ignore
+    formData.append('file', {
+      uri: uri,
+      name: 'photo.jpg',
+      type: 'image/jpeg',
+    });
+
+    try {
+      let response = await fetch('https://my-food-api-53af.onrender.com/predict', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      let result = await response.json();
+      
+      if (result.success && result.predictions.length > 0) {
+        setAiPrediction({
+          food: result.predictions[0].food,
+          confidence: result.predictions[0].confidence
+        });
+      }
+    } catch (error) {
+      console.error("AI API Error:", error);
+      Alert.alert("Error", "Could not connect to the AI server.");
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -319,6 +362,37 @@ export default function Home() {
               <Image source={{ uri: selectedImage }} className="w-full h-56" resizeMode="cover" />
               <View className="p-4">
                 <Text className="text-base font-semibold text-[#2F3A3A] mb-2">{t("selectedPhotoLabel")}</Text>
+                
+                {/* --- AI Results Display --- */}
+                {aiLoading && (
+                  <View className="bg-blue-50 p-4 rounded-xl mb-4 border border-blue-100 flex-row items-center justify-center gap-2">
+                    <ActivityIndicator size="small" color="#3B82F6" />
+                    <Text className="text-blue-600 font-medium">AI is analyzing food...</Text>
+                  </View>
+                )}
+                
+                {aiPrediction && !aiLoading && (
+                  <View className={`p-4 rounded-xl mb-4 border ${aiPrediction.confidence < 50 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                    
+                    {/* If confidence is LESS than 50% */}
+                    {aiPrediction.confidence < 50 ? (
+                      <View className="items-center">
+                        <Text className="text-base font-bold text-red-600 mb-1">Food not recognized 😕</Text>
+                        <Text className="text-sm text-red-500 text-center">Please make sure the photo is clear and contains food.</Text>
+                      </View>
+                    ) : (
+                    /* If confidence is 50% or HIGHER */
+                      <View>
+                        <Text className="text-sm text-green-700 font-medium mb-1">AI Detection Result:</Text>
+                        <Text className="text-xl font-bold text-[#2F3A3A]">{aiPrediction.food}</Text>
+                        <Text className="text-sm text-green-600 font-medium">{aiPrediction.confidence}% Confidence</Text>
+                      </View>
+                    )}
+
+                  </View>
+                )}
+                {/* ------------------------- */}
+
                 <Text className="text-sm text-[#7A8A8A] mb-3">{t("selectedPhotoHint")}</Text>
                 <View className="flex-row gap-3">
                   <TouchableOpacity

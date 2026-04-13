@@ -39,7 +39,7 @@ export default function FoodResult() {
 
       try {
         const response = await fetch(
-          `https://jom-healthy-java-production.up.railway.app/food/getFoodNutrition?name=${encodeURIComponent(query)}`,
+          `https://jom-healthy-java.onrender.com/food/getFoodNutrition?name=${encodeURIComponent(query)}`,
           {
             method: "POST",
           }
@@ -180,9 +180,9 @@ export default function FoodResult() {
     );
   }
 
-  const imageUri = foodData?.picUrl ||
-    "https://images.unsplash.com/photo-1638328740227-1c4b1627614d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGh5JTIwZm9vZCUyMG51dHJpdGlvbiUyMGNvbG9yZnVsfGVufDF8fHx8MTc3NTAxNjM5NXww&ixlib=rb-4.1.0&q=80&w=1080";
-  const displayName = foodData?.foodNameOriginal || foodData?.foodNameEn || query;
+  const imageUri = foodData?.picUrl;
+
+  const displayName = language === "zh" ? foodData?.foodNameCn : language === "ms" ? foodData?.foodNameMs : foodData?.foodNameEn || query;
 
   return (
     <ScrollView
@@ -202,7 +202,6 @@ export default function FoodResult() {
           <Text className="text-2xl font-bold text-white flex-1 text-center">{t("foodAnalysis")}</Text>
           <LanguageSelector />
         </View>
-        <Text className="text-white/90 text-sm text-center mt-2">{t("resultsFor").replace("{query}", query)}</Text>
       </View>
 
       <View className="px-6 py-6">
@@ -216,9 +215,6 @@ export default function FoodResult() {
             <Text className="text-2xl font-bold text-[#2F3A3A] mb-2 text-center">
               {displayName}
             </Text>
-            {foodData?.foodGroup ? (
-              <Text className="text-sm text-[#7A8A8A] text-center">{foodData.foodGroup}</Text>
-            ) : null}
           </View>
         </View>
 
@@ -237,7 +233,16 @@ export default function FoodResult() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-lg font-semibold text-[#2F3A3A] mb-4">{t("nutritionFacts")}</Text>
+          {/* 修改后的标题栏：Nutrition Facts 与 Value per 100g 左右分布 */}
+          <View className="flex-row items-baseline justify-between mb-4">
+            <Text className="text-lg font-semibold text-[#2F3A3A]">
+              {t("nutritionFacts")}
+            </Text>
+            <Text className="text-xs text-[#7A8A8A]">
+              Value per 100g
+            </Text>
+          </View>
+
           <View className="flex-row justify-between gap-3 mb-3">
             {nutritionInfo.map((item, index) => (
               <View
@@ -304,4 +309,3 @@ export default function FoodResult() {
     </ScrollView>
   );
 }
-
