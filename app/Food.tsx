@@ -1,15 +1,15 @@
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Apple, Camera, Search, Sparkles, Upload, UtensilsCrossed } from "lucide-react-native";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { LanguageSelector } from "./components/language-selector";
 import { useLocalization } from "./utils/LocalizationProvider";
@@ -19,8 +19,15 @@ export default function Food() {
   const { t } = useLocalization();
   const [searchQuery, setSearchQuery] = useState("");
 
+  useFocusEffect(
+    useCallback(() => {
+      setSearchQuery("");
+    }, [])
+  );
+
   const handlePhotoUpload = () => {
     const query = searchQuery.trim() || "Nasi Lemak";
+    setSearchQuery("");
     navigation.navigate("FoodResult", { query });
   };
 
@@ -31,6 +38,7 @@ export default function Food() {
       return;
     }
 
+    setSearchQuery("");
     navigation.navigate("FoodResult", { query });
   };
 
@@ -121,7 +129,10 @@ export default function Food() {
               {popularFoods.map((food, index) => (
                 <TouchableOpacity
                   key={index}
-                  onPress={() => navigation.navigate("FoodResult", { query: food.name })}
+                  onPress={() => {
+                    setSearchQuery("");
+                    navigation.navigate("FoodResult", { query: food.name });
+                  }}
                   className="bg-white rounded-2xl shadow-md p-5 mb-3"
                   style={{ width: "48%" }}
                   activeOpacity={0.85}
@@ -151,4 +162,3 @@ export default function Food() {
     </KeyboardAvoidingView>
   );
 }
-

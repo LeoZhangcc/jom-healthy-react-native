@@ -1,4 +1,4 @@
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import {
   Activity,
@@ -13,7 +13,7 @@ import {
   Weight,
   X
 } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -76,6 +76,12 @@ export default function Home() {
   };
 
   const isFormValid = age !== "" && height !== "" && weight !== "";
+
+  useFocusEffect(
+    useCallback(() => {
+      setFoodSearchQuery("");
+    }, [])
+  );
 
   const handleSubmit = () => {
     navigation.navigate("Result", { age, height, weight });
@@ -353,6 +359,15 @@ export default function Home() {
                   className="flex-1 text-base py-3"
                   placeholderTextColor="#9CA3AF"
                 />
+                {foodSearchQuery ? (
+                  <TouchableOpacity
+                    onPress={() => setFoodSearchQuery("")}
+                    className="w-11 h-11 bg-gray-200 rounded-xl items-center justify-center"
+                    activeOpacity={0.8}
+                  >
+                    <X color="#6B7280" size={20} />
+                  </TouchableOpacity>
+                ) : null}
                 <TouchableOpacity
                   onPress={() => setShowCameraOptions(true)}
                   className="w-11 h-11 bg-[#4CAF7A] rounded-xl items-center justify-center"
@@ -656,4 +671,3 @@ export default function Home() {
     </KeyboardAvoidingView>
   );
 }
-

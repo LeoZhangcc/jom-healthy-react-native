@@ -152,7 +152,7 @@ export default function FoodResult() {
       >
         <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg relative">
           <TouchableOpacity
-            onPress={() => navigation.navigate("Home")}
+            onPress={() => navigation.goBack()}
             className="w-10 h-10 rounded-full items-center justify-center"
             style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
             activeOpacity={0.8}
@@ -192,7 +192,7 @@ export default function FoodResult() {
       <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg relative">
         <View className="flex-row items-center justify-between mb-2">
           <TouchableOpacity
-            onPress={() => navigation.navigate("Home")}
+            onPress={() => navigation.goBack()}
             className="w-10 h-10 rounded-full items-center justify-center"
             style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
             activeOpacity={0.8}
@@ -293,7 +293,7 @@ export default function FoodResult() {
         </View>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate("Home")}
+          onPress={() => navigation.goBack()}
           className="w-full bg-[#4CAF7A] py-5 rounded-2xl items-center justify-center"
           activeOpacity={0.8}
         >
