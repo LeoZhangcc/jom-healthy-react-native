@@ -5,6 +5,7 @@ export interface HealthRecord {
   date: string;       // 建议存当前时间戳或格式化日期
   nickname: string;   // 👈 新增：区分是谁测的（如：爸爸、Me）
   ageText: string;    // 👈 存 "20Years 3Months" 这种展示文本
+  ageInMonths: number;
   height: number;
   weight: number;
   gender: number;     // 1: 男, 0: 女

@@ -54,7 +54,7 @@ type Status = {
 
 // --- Constants ---
 const heroImage = require("../assets/images/react-logo.png");
-const BASE_URL = "http://192.168.100.237:8080"; 
+const BASE_URL = "https://jom-healthy-java.onrender.com"; 
 
 export default function Home() {
   const navigation = useNavigation<any>();
@@ -396,7 +396,7 @@ export default function Home() {
       className="flex-1 bg-[#FAFBF8]"
       
     >
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
         {/* 1. 顶部标题区 */}
         <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg">
           <View className="flex-row items-start justify-between mb-2">

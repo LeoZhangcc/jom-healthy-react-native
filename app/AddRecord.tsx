@@ -21,7 +21,7 @@ export default function AddRecord() {
   const { birthDate, height, weight, gender } = route.params || {};
 
   // 🚨 核心配置：你的 Spring Boot 服务器地址
-  const BASE_URL = "http://10.192.52.207:8080"; 
+  const BASE_URL = "https://jom-healthy-java.onrender.com"; 
 
   // 页面状态控制
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +63,23 @@ export default function AddRecord() {
       setIsLoading(false);
     }
   };
+  const calculateTotalMonths = (dob: string) => {
+    if (!dob) return 0;
+    const birth = new Date(dob);
+    const now = new Date();
+
+    let years = now.getFullYear() - birth.getFullYear();
+    let months = now.getMonth() - birth.getMonth();
+
+    // 处理月份借位逻辑
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    // 返回总月数：年 * 12 + 剩余月
+    return (years * 12) + months;
+  };
 
   const calculateDisplayAge = (dob: string) => {
     if (!dob) return "-";
@@ -95,6 +112,7 @@ export default function AddRecord() {
       // 1. 先算出数字 BMI
       const heightInMeters = height / 100;
       const calculatedBmi = parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
+      const totalMonths = calculateTotalMonths(birthDate);
 
       // 2. 构造 newRecord，必须包含接口要求的所有字段
       const newRecord: HealthRecord = {
@@ -103,6 +121,7 @@ export default function AddRecord() {
         // 👉 补齐缺失的字段
         nickname: "Me",                             // 暂时默认叫 Me，以后可以加输入框
         ageText: calculateDisplayAge(birthDate),     // 存入算好的年龄字符串 (如 "20Years 3Months")
+        ageInMonths: totalMonths,
         height: height,
         weight: weight,
         gender: gender,                             // 来自 route.params

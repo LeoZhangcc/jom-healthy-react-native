@@ -55,6 +55,7 @@ export const translations = {
     foodAnalysis: "Food Analysis",
     healthyChoice: "Healthy Choice",
     moderate: "Moderate",
+    history: "History",
     highSugarFat: "High in Sugar/Fat",
     nutritiousDescription: "This food is nutritious and good for your child!",
     moderateDescription: "Okay in moderation. Balance with healthier options.",
