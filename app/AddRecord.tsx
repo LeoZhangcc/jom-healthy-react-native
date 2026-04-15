@@ -3,12 +3,14 @@ import { AlertCircle, ArrowLeft, HeartPulse } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
 import { useLocalization } from "./utils/LocalizationProvider";
+import { HealthRecord, loadHealthRecords, saveHealthRecord } from "./utils/storage"; // Use for saving the record to local storage after getting the result from backend
 
 export default function AddRecord() { 
   const navigation = useNavigation<any>();
@@ -19,7 +21,7 @@ export default function AddRecord() {
   const { birthDate, height, weight, gender } = route.params || {};
 
   // 🚨 核心配置：你的 Spring Boot 服务器地址
-  const BASE_URL = "http://192.168.100.237:8080"; 
+  const BASE_URL = "http://10.192.52.207:8080"; 
 
   // 页面状态控制
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +82,49 @@ export default function AddRecord() {
       return `${months}Months`;
     }
     return `${years}Years${months > 0 ? ` ${months}Months` : ''}`;
+  };
+
+   // Use for storaging the infomation into local storage after getting the result from backend
+  const handleSave = async () => {
+    if (!resultText) {
+      Alert.alert("Wait", "Please wait for the health assessment to complete.");
+      return;
+    }
+
+    try {
+      // 1. 先算出数字 BMI
+      const heightInMeters = height / 100;
+      const calculatedBmi = parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
+
+      // 2. 构造 newRecord，必须包含接口要求的所有字段
+      const newRecord: HealthRecord = {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        // 👉 补齐缺失的字段
+        nickname: "Me",                             // 暂时默认叫 Me，以后可以加输入框
+        ageText: calculateDisplayAge(birthDate),     // 存入算好的年龄字符串 (如 "20Years 3Months")
+        height: height,
+        weight: weight,
+        gender: gender,                             // 来自 route.params
+        bmiValue: calculatedBmi,                    // 注意：名字要叫 bmiValue 而不是 bmi
+        adviceText: resultText,                     // 🚨 关键：把 Java 后端的评价存进去！
+      };
+
+      // 执行保存
+      await saveHealthRecord(newRecord);
+
+      const currentRecords = await loadHealthRecords();
+      console.log("当前手机里存的所有记录是：", currentRecords);
+
+      Alert.alert(
+        "Success!", 
+        "Your assessment has been saved to the growth diary.",
+        [{ text: "OK", onPress: () => navigation.navigate("Growth") }]
+      );
+    } catch (error) {
+      console.error("Save error:", error);
+      Alert.alert("Error", "Failed to save record locally.");
+    }
   };
 
   return (
@@ -168,7 +213,7 @@ export default function AddRecord() {
 
             {/* 保存记录按钮 (前端可以用来把结果存进本地历史记录) */}
             <TouchableOpacity
-              onPress={() => navigation.navigate("Growth")}
+              onPress={handleSave} // Call the function to save the record to local storage
               className="w-full bg-[#4CAF7A] py-5 rounded-2xl items-center shadow-md mt-4"
               activeOpacity={0.8}
             >
