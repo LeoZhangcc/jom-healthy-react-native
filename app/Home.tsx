@@ -1,7 +1,6 @@
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import {
-  Activity,
   Baby,
   Calendar, // 👉 新增：日历图标
   Camera,
@@ -9,11 +8,8 @@ import {
   ChevronUp,
   ExternalLink, // 👉 新增：外部链接图标
   FileText, // 👉 新增：文件图标
-  Heart, // 👉 新增：爱心图标
-  Moon,
   Ruler,
   Search,
-  Sparkles,
   TrendingUp, // 👉 新增：趋势图标
   Weight,
   X
@@ -350,45 +346,9 @@ export default function Home() {
     }
   };
 
-  const healthFacts = [
-    {
-      icon: Activity,
-      title: t("healthFact1Title"),
-      subtitle: t("healthFact1Subtitle"),
-      color: "#F97316",
-      backgroundColor: "#FFF1E0",
-      type: "icon" as const,
-    },
-    {
-      imageUri:
-        "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?fit=crop&w=400&q=80",
-      title: t("healthFact2Title"),
-      subtitle: t("healthFact2Subtitle"),
-      backgroundColor: "#E7F6EE",
-      type: "image" as const,
-    },
-    {
-      imageUri:
-        "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?fit=crop&w=400&q=80",
-      title: t("healthFact3Title"),
-      subtitle: t("healthFact3Subtitle"),
-      backgroundColor: "#E0F2FE",
-      type: "image" as const,
-    },
-  ];
 
-  const dailyTips = [
-    {
-      icon: Moon,
-      tip: t("dailyTip1"),
-      color: "#D97706",
-    },
-    {
-      icon: Activity,
-      tip: t("dailyTip2"),
-      color: "#7C3AED",
-    },
-  ];
+
+
 
   return (
     <KeyboardAvoidingView
@@ -690,46 +650,9 @@ export default function Home() {
           <Statistic rows={rows} />
         </View>
 
-        {/* 7. 健康科普卡片 */}
-        <View className="px-6 mb-6">
-          <View className="flex-row items-center gap-2 mb-4">
-            <Heart color="#EF4444" size={18} />
-            <Text className="text-lg font-semibold text-[#2F3A3A]">{t("healthInsights")}</Text>
-          </View>
-          <View className="space-y-3">
-            {healthFacts.map((fact, index) => (
-              <View key={index} className="bg-white rounded-2xl shadow-md p-5 flex-row items-center gap-4">
-                {fact.type === "icon" ? (
-                  <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: fact.backgroundColor }}><Activity color={fact.color} size={24} /></View>
-                ) : (
-                  <Image source={{ uri: fact.imageUri }} className="w-14 h-14 rounded-xl" resizeMode="cover" />
-                )}
-                <View className="flex-1">
-                  <Text className="font-semibold text-[#2F3A3A] text-base">{fact.title}</Text>
-                  <Text className="text-[#7A8A8A] text-sm">{fact.subtitle}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
 
-        {/* 8. 每日贴士 */}
-        <View className="px-6 mb-6">
-          <View className="flex-row items-center gap-2 mb-4">
-            <Sparkles color="#F59E0B" size={18} />
-            <Text className="text-lg font-semibold text-[#2F3A3A]">{t("dailyTipsTitle")}</Text>
-          </View>
-          <View className="space-y-3">
-            {dailyTips.map((item, index) => (
-              <View key={index} className="bg-white rounded-2xl shadow-md p-5 flex-row items-start gap-4">
-                <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: "#FEF3C7" }}>
-                  {index === 0 ? <Moon color={item.color} size={20} /> : <Activity color={item.color} size={20} />}
-                </View>
-                <Text className="text-[#2F3A3A] text-base flex-1 leading-relaxed pt-1.5">{item.tip}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+
+
 
         {/* 9. 底部横幅 */}
         <View className="px-6">
