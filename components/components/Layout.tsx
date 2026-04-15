@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Home as HomeIcon, TrendingUp } from "lucide-react-native";
-import Growth from "../Growth";
-import Home from "../Home";
+import Growth from "../../app/Growth";
+import Home from "../../app/Home";
 
 const Tab = createBottomTabNavigator();
 

@@ -1,8 +1,8 @@
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { Animated, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
-import { supportedLanguages } from "../utils/i18n";
-import { useLocalization } from "../utils/LocalizationProvider";
+import { supportedLanguages } from "../../utils/i18n";
+import { useLocalization } from "../../utils/LocalizationProvider";
 
 const LANGUAGE_NAMES = supportedLanguages;
 

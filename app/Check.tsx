@@ -2,16 +2,16 @@ import { useNavigation } from "@react-navigation/native";
 import { ArrowRight, Baby, Ruler, Weight } from "lucide-react-native";
 import { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { LanguageSelector } from "./components/language-selector";
-import { useLocalization } from "./utils/LocalizationProvider";
+import { LanguageSelector } from "../components/components/language-selector";
+import { useLocalization } from "../utils/LocalizationProvider";
 
 export default function Check() {
   const navigation = useNavigation<any>();

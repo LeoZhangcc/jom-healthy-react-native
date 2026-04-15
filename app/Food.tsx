@@ -11,8 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { LanguageSelector } from "./components/language-selector";
-import { useLocalization } from "./utils/LocalizationProvider";
+import { LanguageSelector } from "../components/components/language-selector";
+import { useLocalization } from "../utils/LocalizationProvider";
 
 export default function Food() {
   const navigation = useNavigation<any>();

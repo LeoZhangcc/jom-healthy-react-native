@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { useLocalization } from "./utils/LocalizationProvider";
-import { HealthRecord, loadHealthRecords, saveHealthRecord } from "./utils/storage"; // Use for saving the record to local storage after getting the result from backend
+import { useLocalization } from "../utils/LocalizationProvider";
+import { HealthRecord, loadHealthRecords, saveHealthRecord } from "../utils/storage"; // Use for saving the record to local storage after getting the result from backend
 
 export default function AddRecord() { 
   const navigation = useNavigation<any>();

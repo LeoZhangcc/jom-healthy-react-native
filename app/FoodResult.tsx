@@ -2,8 +2,8 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { AlertCircle, ArrowLeft, Candy, CheckCircle, Droplet, Flame } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { LanguageSelector } from "./components/language-selector";
-import { useLocalization } from "./utils/LocalizationProvider";
+import { LanguageSelector } from "../components/components/language-selector";
+import { useLocalization } from "../utils/LocalizationProvider";
 
 type FoodNutritionItem = {
   foodNameOriginal?: string | null;

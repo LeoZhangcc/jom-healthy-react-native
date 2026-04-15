@@ -35,9 +35,9 @@ import {
 } from "react-native";
 
 import Markdown from 'react-native-markdown-display';
-import { LanguageSelector } from "./components/language-selector";
+import { LanguageSelector } from "../components/components/language-selector";
+import { useLocalization } from "../utils/LocalizationProvider";
 import Statistic from "./Statistic";
-import { useLocalization } from "./utils/LocalizationProvider";
 
 // --- Types ---
 type FoodSuggestion = {
@@ -396,7 +396,7 @@ export default function Home() {
       className="flex-1 bg-[#FAFBF8]"
       
     >
-      <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         {/* 1. 顶部标题区 */}
         <View className="bg-[#4CAF7A] px-6 pt-12 pb-8 rounded-b-3xl shadow-lg">
           <View className="flex-row items-start justify-between mb-2">

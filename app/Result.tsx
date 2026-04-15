@@ -1,16 +1,16 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
-    Activity,
-    AlertCircle,
-    AlertTriangle,
-    Apple,
-    CheckCircle,
-    Heart,
+  Activity,
+  AlertCircle,
+  AlertTriangle,
+  Apple,
+  CheckCircle,
+  Heart,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { LanguageSelector } from "./components/language-selector";
-import { useLocalization } from "./utils/LocalizationProvider";
+import { LanguageSelector } from "../components/components/language-selector";
+import { useLocalization } from "../utils/LocalizationProvider";
 
 type HealthStatus = "healthy" | "underweight" | "overweight";
 
