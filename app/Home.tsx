@@ -3,7 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import {
   Baby,
   Calendar, // 👉 新增：日历图标
-  Camera,
+  Camera, // 相机
   ChevronDown,
   ChevronUp,
   ExternalLink, // 👉 新增：外部链接图标

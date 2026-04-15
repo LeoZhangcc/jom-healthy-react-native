@@ -1,7 +1,7 @@
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import {
-  AlertCircle,
-  Download,
+  AlertCircle, // 警告图标
+  Download, // 下载图标
   Plus,
   Ruler,
   Scale,
@@ -258,7 +258,8 @@ const getYAxisProps = () => {
             <View className="flex-row flex-wrap mt-6 justify-center gap-x-4 gap-y-3 px-2">
               <View className="flex-row items-center gap-1.5"><View className="w-2.5 h-2.5 rounded-full bg-[#4CAF7A]" /><Text className="text-[10px] text-[#7A8A8A]">Normal</Text></View>
               <View className="flex-row items-center gap-1.5"><View className="w-2.5 h-2.5 rounded-full bg-[#FFC107]" /><Text className="text-[10px] text-[#7A8A8A]">Risk</Text></View>
-              <View className="flex-row items-center gap-1.5"><View className="w-2.5 h-2.5 rounded-full bg-[#FF4D4F]" /><Text className="text-[10px] text-[#7A8A8A]">Alert</Text></View>
+              <View className="flex-row items-center gap-1.5"><View className="w-2.5 h-2.5 rounded-full bg-[#FF8A65]" /><Text className="text-[10px] text-[#7A8A8A]">Alert</Text></View>
+              <View className="flex-row items-center gap-1.5"><View className="w-2.5 h-2.5 rounded-full bg-[#FF8C8C]" /><Text className="text-[10px] text-[#7A8A8A]">Dangerous</Text></View> 
             </View>
           )}
         </View>
