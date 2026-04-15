@@ -88,7 +88,7 @@ const ChartCarousel: React.FC<{ rows: Status[] }> = ({ rows }) => {
           </Text>
 
           <ScrollView ref={scrollRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} 
-            scrollEnabled={false}>
+            scrollEnabled={true} snapToInterval={screenWidth}>
               {statistics.map((cat, index) => {
                   const filtered = rows.filter(r => r.statistic === cat);
 
