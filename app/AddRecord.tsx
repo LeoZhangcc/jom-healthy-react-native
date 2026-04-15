@@ -10,25 +10,31 @@ import {
   View
 } from "react-native";
 import { useLocalization } from "../utils/LocalizationProvider";
-import { HealthRecord, loadHealthRecords, saveHealthRecord } from "../utils/storage"; // Use for saving the record to local storage after getting the result from backend
+import { HealthRecord, loadHealthRecords, saveHealthRecord } from "../utils/storage";
 
 export default function AddRecord() { 
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { t } = useLocalization();
 
-  // 👉 1. 接住从 Home 首页传过来的 4 个参数！
   const { birthDate, height, weight, gender } = route.params || {};
-
-  // 🚨 核心配置：你的 Spring Boot 服务器地址
   const BASE_URL = "https://jom-healthy-java.onrender.com"; 
 
-  // 页面状态控制
   const [isLoading, setIsLoading] = useState(true);
   const [resultText, setResultText] = useState("");
   const [isError, setIsError] = useState(false);
 
-  // 👉 2. 页面一加载，自动去向 Java 后端要数据！
+  const formatAdviceText = (text: string) => {
+    if (!text) return "";
+    return text
+      // 1. 给 "Assessment results:" 换行，加图标和空格
+      .replace("Assessment results:", "\n\n📋 Assessment: ")
+      // 2. 给 "- It is recommended" 换行，加建议图标
+      .replace(" - It is recommended", "\n\n💡 Advice:\nIt is recommended")
+      // 兼容某些没有空格的情况
+      .replace("- It is recommended", "\n\n💡 Advice:\nIt is recommended");
+  };
+
   useEffect(() => {
     if (!birthDate || !height || !weight || gender === null) {
       setIsError(true);
@@ -40,22 +46,16 @@ export default function AddRecord() {
 
   const fetchHealthEvaluation = async () => {
     try {
-      // 拼接后端 API 路由
       const url = `${BASE_URL}/api/bmi/evaluate?heightCm=${height}&weightKg=${weight}&birthDateStr=${birthDate}&gender=${gender}`;
-      
       const response = await fetch(url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
 
-      if (!response.ok) {
-        throw new Error('Server response error');
-      }
+      if (!response.ok) throw new Error('Server response error');
 
-      // 拿到 Java 返回的字符串结果
       const text = await response.text(); 
       setResultText(text);
-
     } catch (error) {
       console.error("Request to backend failed:", error);
       setIsError(true);
@@ -63,21 +63,14 @@ export default function AddRecord() {
       setIsLoading(false);
     }
   };
+
   const calculateTotalMonths = (dob: string) => {
     if (!dob) return 0;
     const birth = new Date(dob);
     const now = new Date();
-
     let years = now.getFullYear() - birth.getFullYear();
     let months = now.getMonth() - birth.getMonth();
-
-    // 处理月份借位逻辑
-    if (months < 0) {
-      years--;
-      months += 12;
-    }
-
-    // 返回总月数：年 * 12 + 剩余月
+    if (months < 0) { years--; months += 12; }
     return (years * 12) + months;
   };
 
@@ -85,60 +78,68 @@ export default function AddRecord() {
     if (!dob) return "-";
     const birth = new Date(dob);
     const now = new Date();
-    
     let years = now.getFullYear() - birth.getFullYear();
     let months = now.getMonth() - birth.getMonth();
-
-    // 处理月份借位（比如今年还没过生日，月份是负数）
-    if (months < 0) {
-      years--;
-      months += 12;
-    }
+    if (months < 0) { years--; months += 12; }
     
-    if (years === 0) {
-      return `${months}Months`;
-    }
-    return `${years}Years${months > 0 ? ` ${months}Months` : ''}`;
+    // 💡 优化：返回更短的格式，方便在一行展示 (例如 "5y 2m")
+    if (years === 0) return `${months}m`;
+    return `${years}y ${months > 0 ? `${months}m` : ''}`;
   };
 
-   // Use for storaging the infomation into local storage after getting the result from backend
-  const handleSave = async () => {
+const handleSave = async () => {
     if (!resultText) {
       Alert.alert("Wait", "Please wait for the health assessment to complete.");
       return;
     }
-
+    
     try {
-      // 1. 先算出数字 BMI
+      // 🌟 1. 在保存前，先加载手机里存的所有历史记录
+      const records = await loadHealthRecords();
+      
+      // 🌟 2. 获取今天的日期字符串 (格式: YYYY-MM-DD)
+      const today = new Date().toISOString().split('T')[0];
+
+      // 🌟 3. 检查历史记录中，有没有哪一条的日期等于今天
+      const hasSavedToday = records.some((record) => {
+        const recordDate = new Date(record.date).toISOString().split('T')[0];
+        return recordDate === today;
+      });
+
+      // 🌟 4. 如果今天已经保存过了，弹窗拦截，并直接退回上一页！
+      if (hasSavedToday) {
+        Alert.alert(
+          "Notice", 
+          "You have already saved a record today. Please come back tomorrow to track new changes! ✨",
+          [{ text: "OK", onPress: () => navigation.goBack() }]
+        );
+        return; // 终止函数，不再执行后面的保存逻辑
+      }
+
+      // --- 下面是原本正常的保存逻辑 ---
       const heightInMeters = height / 100;
       const calculatedBmi = parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
       const totalMonths = calculateTotalMonths(birthDate);
 
-      // 2. 构造 newRecord，必须包含接口要求的所有字段
       const newRecord: HealthRecord = {
         id: Date.now().toString(),
         date: new Date().toISOString(),
-        // 👉 补齐缺失的字段
-        nickname: "Me",                             // 暂时默认叫 Me，以后可以加输入框
-        ageText: calculateDisplayAge(birthDate),     // 存入算好的年龄字符串 (如 "20Years 3Months")
+        nickname: "Me", 
+        ageText: calculateDisplayAge(birthDate),
         ageInMonths: totalMonths,
         height: height,
         weight: weight,
-        gender: gender,                             // 来自 route.params
-        bmiValue: calculatedBmi,                    // 注意：名字要叫 bmiValue 而不是 bmi
-        adviceText: resultText,                     // 🚨 关键：把 Java 后端的评价存进去！
+        gender: gender, 
+        bmiValue: calculatedBmi, 
+        adviceText: resultText, 
       };
 
-      // 执行保存
       await saveHealthRecord(newRecord);
-
-      const currentRecords = await loadHealthRecords();
-      console.log("当前手机里存的所有记录是：", currentRecords);
-
+      
       Alert.alert(
         "Success!", 
         "Your assessment has been saved to the growth diary.",
-        [{ text: "OK", onPress: () => navigation.navigate("Growth") }]
+        [{ text: "OK", onPress: () => navigation.goBack() }]
       );
     } catch (error) {
       console.error("Save error:", error);
@@ -148,95 +149,109 @@ export default function AddRecord() {
 
   return (
     <View className="flex-1 bg-[#FAFBF8]">
-      {/* 顶部导航栏 */}
-      <View className="bg-[#4CAF7A] px-6 pt-14 pb-6 rounded-b-3xl shadow-lg flex-row items-center gap-4">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="bg-white/20 p-2 rounded-xl"
-          activeOpacity={0.8}
-        >
-          <ArrowLeft color="#FFFFFF" size={24} />
-        </TouchableOpacity>
-        <Text className="text-2xl font-bold text-white">Health Assessment Report</Text>
+      
+      {/* 🌟 1. 参考新 UI 优化的顶部导航栏 */}
+      <View className="bg-[#4CAF7A] px-6 pt-12 pb-6 rounded-b-3xl shadow-lg relative">
+        <View className="flex-row items-center justify-between mb-2">
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            className="w-10 h-10 rounded-full items-center justify-center absolute z-10"
+            style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+            activeOpacity={0.8}
+          >
+            <ArrowLeft color="#FFFFFF" size={20} />
+          </TouchableOpacity>
+          {/* 绝对居中的标题 */}
+          <Text className="text-2xl font-bold text-white flex-1 text-center">Health Report</Text>
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 24 }}>
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40 }}>
         
-        {/* 状态 1：正在加载中... */}
+        {/* 状态 1：加载中 */}
         {isLoading && (
-          <View className="mt-20 items-center justify-center">
-            <ActivityIndicator size="large" color="#4CAF7A" />
-            <Text className="mt-4 text-[#7A8A8A] text-base font-semibold">Connecting to a medical engine to analyze data...</Text>
+          <View className="mt-24 items-center justify-center">
+            <View className="bg-white p-6 rounded-3xl shadow-md items-center w-full">
+              <ActivityIndicator size="large" color="#4CAF7A" className="mb-4" />
+              <Text className="text-[#2F3A3A] text-lg font-bold mb-2">Analyzing Data</Text>
+              <Text className="text-[#7A8A8A] text-sm text-center px-4">Connecting to the medical engine to evaluate growth standards...</Text>
+            </View>
           </View>
         )}
 
-        {/* 状态 2：请求失败或参数错误 */}
+        {/* 状态 2：错误 */}
         {!isLoading && isError && (
-          <View className="bg-[#FEF2F2] p-6 rounded-2xl items-center border border-[#FECACA] mt-10">
-            <AlertCircle color="#EF4444" size={48} />
-            <Text className="text-lg font-bold text-[#991B1B] mt-4">Failed to calculate!</Text>
-            <Text className="text-center text-[#DC2626] mt-2 leading-relaxed">
-              Unable to connect to the health server, or missing necessary parameters. Please return to the homepage and enter the information again.
+          <View className="bg-white p-8 rounded-3xl items-center shadow-xl mt-6">
+            <View className="w-20 h-20 bg-[#FEF2F2] rounded-full items-center justify-center mb-4">
+              <AlertCircle color="#EF4444" size={40} />
+            </View>
+            <Text className="text-xl font-bold text-[#991B1B] mb-2">Analysis Failed</Text>
+            <Text className="text-center text-[#64748B] leading-relaxed mb-8">
+              Unable to connect to the health server, or missing necessary parameters.
             </Text>
             <TouchableOpacity
               onPress={() => navigation.goBack()}
-              className="mt-6 bg-[#EF4444] px-8 py-3 rounded-xl"
+              className="w-full bg-[#EF4444] py-4 rounded-2xl items-center justify-center active:bg-red-600"
             >
-              <Text className="text-white font-bold">Back to revise.</Text>
+              <Text className="text-white font-bold text-lg">Return to revise</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* 状态 3：成功拿到 Java 后端的数据！展示报告！ */}
+        {/* 状态 3：成功展示结果 */}
         {!isLoading && !isError && resultText !== "" && (
-          <View className="space-y-6 mt-4">
+          <View>
             
-            {/* 用户输入的数据回顾 */}
-            <View className="flex-row justify-between bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-              <View className="items-center">
-                <Text className="text-[#7A8A8A] text-xs mb-1">Age</Text>
-                <Text className="text-[#2F3A3A] font-bold text-lg">{calculateDisplayAge(birthDate)} <Text className="text-sm font-normal">Age</Text></Text>
+            {/* 🌟 2. 完美的一行四项展示栏 (参考了卡片式的设计) */}
+            <View className="bg-white rounded-3xl shadow-md p-5 mb-6 flex-row justify-between items-center">
+              <View className="items-center flex-1">
+                <Text className="text-[10px] text-[#9CA3AF] mb-1 font-bold uppercase tracking-wider">Age</Text>
+                <Text className="text-[#2F3A3A] font-extrabold text-base">{calculateDisplayAge(birthDate)}</Text>
               </View>
-              <View className="items-center">
-                <Text className="text-[#7A8A8A] text-xs mb-1">Height</Text>
-                <Text className="text-[#2F3A3A] font-bold text-lg">{height} <Text className="text-sm font-normal">cm</Text></Text>
+              <View className="w-[1px] h-8 bg-gray-100" />
+              <View className="items-center flex-1">
+                <Text className="text-[10px] text-[#9CA3AF] mb-1 font-bold uppercase tracking-wider">Height</Text>
+                <Text className="text-[#2F3A3A] font-extrabold text-base">{height}<Text className="text-xs font-medium text-[#7A8A8A]">cm</Text></Text>
               </View>
-              <View className="w-[1px] bg-gray-200" />
-              <View className="items-center">
-                <Text className="text-[#7A8A8A] text-xs mb-1">Weight</Text>
-                <Text className="text-[#2F3A3A] font-bold text-lg">{weight} <Text className="text-sm font-normal">kg</Text></Text>
+              <View className="w-[1px] h-8 bg-gray-100" />
+              <View className="items-center flex-1">
+                <Text className="text-[10px] text-[#9CA3AF] mb-1 font-bold uppercase tracking-wider">Weight</Text>
+                <Text className="text-[#2F3A3A] font-extrabold text-base">{weight}<Text className="text-xs font-medium text-[#7A8A8A]">kg</Text></Text>
               </View>
-              <View className="w-[1px] bg-gray-200" />
-              <View className="items-center">
-                <Text className="text-[#7A8A8A] text-xs mb-1">Gender</Text>
-                <Text className="text-[#2F3A3A] font-bold text-lg">{gender === 1 ? 'Male' : 'Female'}</Text>
+              <View className="w-[1px] h-8 bg-gray-100" />
+              <View className="items-center flex-1">
+                <Text className="text-[10px] text-[#9CA3AF] mb-1 font-bold uppercase tracking-wider">Gender</Text>
+                <Text className="text-[#2F3A3A] font-extrabold text-base">{gender === 1 ? 'Boy' : 'Girl'}</Text>
               </View>
             </View>
 
-            {/* 核心医疗建议卡片 */}
-            <View className="bg-white rounded-3xl shadow-md overflow-hidden">
-              <View className="bg-gradient-to-r from-[#EAF7F0] to-[#EAF6FB] p-6 items-center border-b border-gray-100">
-                <View className="w-16 h-16 bg-white rounded-full items-center justify-center shadow-sm mb-3">
-                  <HeartPulse color="#4CAF7A" size={32} />
+            {/* 🌟 3. WHO 医疗建议排版优化 */}
+            <View className="bg-white rounded-3xl shadow-xl overflow-hidden mb-8">
+              {/* 优雅的标题区 */}
+              <View className="bg-[#EAF7F0] pt-6 pb-5 px-6 items-center">
+                <View className="w-14 h-14 bg-white rounded-2xl items-center justify-center shadow-sm mb-3">
+                  <HeartPulse color="#4CAF7A" size={28} />
                 </View>
-                <Text className="text-xl font-bold text-[#2F3A3A]">WHO Child Growth Standard</Text>
+                <Text className="text-xl font-extrabold text-[#2F3A3A] text-center">WHO Growth Standard</Text>
+                <Text className="text-xs text-[#4CAF7A] font-bold mt-1 uppercase tracking-widest">Medical Analysis</Text>
               </View>
               
-              <View className="p-6">
-                {/* 💡 这里就是展示你 Java 后端返回的那段长文本的地方！ */}
-                <Text className="text-[#475569] text-base leading-relaxed">
-                  {resultText}
+              {/* 后端文本展示区：提升了行高、字间距和文本颜色 */}
+              <View className="p-6 bg-white">
+                {/* 👇 注意：去掉了 text-justify，加上了 formatAdviceText 处理 */}
+                <Text className="text-[#475569] text-[15px] leading-7 tracking-wide text-left">
+                  {formatAdviceText(resultText)}
                 </Text>
               </View>
             </View>
 
-            {/* 保存记录按钮 (前端可以用来把结果存进本地历史记录) */}
+            {/* 🌟 4. 优化后的保存按钮：完美居中，加大圆角 */}
             <TouchableOpacity
-              onPress={handleSave} // Call the function to save the record to local storage
-              className="w-full bg-[#4CAF7A] py-5 rounded-2xl items-center shadow-md mt-4"
+              onPress={handleSave}
+              className="w-full bg-[#4CAF7A] py-4 rounded-2xl items-center justify-center shadow-md shadow-green-200"
               activeOpacity={0.8}
             >
-              <Text className="text-white text-lg font-bold">Complete and save to your growth diary.</Text>
+              <Text className="text-white text-lg font-bold tracking-wide">Save to Growth Diary</Text>
             </TouchableOpacity>
 
           </View>

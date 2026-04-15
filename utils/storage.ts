@@ -33,6 +33,24 @@ export async function saveHealthRecord(record: HealthRecord): Promise<HealthReco
   return updatedRecords;
 }
 
+// 💡 修复后的批量删除逻辑
+export const deleteHealthRecords = async (idsToDelete: string[]) => {
+  try {
+    const records = await loadHealthRecords();
+    
+    // 🚨 核心修复 1：强制把 record.id 转成 String，完美兼容你导入的 JSON 数据！
+    const updatedRecords = records.filter(record => !idsToDelete.includes(String(record.id)));
+    
+    // 🚨 核心修复 2：使用统一的 HEALTH_RECORDS_KEY 把过滤后的数据重新写回硬盘！
+    await AsyncStorage.setItem(HEALTH_RECORDS_KEY, JSON.stringify(updatedRecords)); 
+    
+    return true;
+  } catch (error) {
+    console.error("Failed to delete records", error);
+    return false;
+  }
+};
+
 export async function clearHealthRecords(): Promise<void> {
   await AsyncStorage.removeItem(HEALTH_RECORDS_KEY);
 }

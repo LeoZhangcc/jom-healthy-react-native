@@ -1,18 +1,23 @@
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import {
-  AlertCircle, // 警告图标
-  Download, // 下载图标
+  AlertCircle,
+  CheckSquare,
+  Download,
   Plus,
   Ruler,
   Scale,
+  Square,
+  Trash2,
   TrendingUp,
-  Upload
+  Upload,
+  X
 } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Modal,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -20,13 +25,16 @@ import {
 } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
 
+// 💡 保持你当前的路径
+import HealthInputForm from "../components/components/HealthInputModal";
+
 import * as DocumentPicker from 'expo-document-picker';
 import { documentDirectory, readAsStringAsync, writeAsStringAsync } from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 
 import { LanguageSelector } from "../components/components/language-selector";
 import { useLocalization } from "../utils/LocalizationProvider";
-import { HealthRecord, loadHealthRecords, saveHealthRecord } from "../utils/storage";
+import { HealthRecord, deleteHealthRecords, loadHealthRecords, saveHealthRecord } from "../utils/storage";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const BASE_URL = "https://jom-healthy-java.onrender.com";
@@ -43,9 +51,17 @@ export default function Growth() {
   const [activeSegment, setActiveSegment] = useState<SegmentType>("BMI");
   const [viewType, setViewType] = useState<"MONTH" | "YEAR">("MONTH");
   const [showHint, setShowHint] = useState(true);
+  const [showInputModal, setShowInputModal] = useState(false);
+
+  // 批量删除相关的状态
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useFocusEffect(
     useCallback(() => {
+      setShowInputModal(false); 
+      setIsEditMode(false); 
+      setSelectedIds([]);
       fetchData();
     }, [viewType, activeSegment])
   );
@@ -100,16 +116,61 @@ export default function Growth() {
     } catch (e) { Alert.alert("Import Failed", "Invalid file."); }
   };
 
-  // 💡 修正后的绘图逻辑：确保每个点都有 Label
+  const handleSingleDelete = (id: string) => {
+    Alert.alert(
+      "Delete Record",
+      "Are you sure you want to delete this record?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: async () => {
+            await deleteHealthRecords([id]);
+            fetchData(); 
+          } 
+        }
+      ]
+    );
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedIds.length === 0) {
+      setIsEditMode(false);
+      return;
+    }
+    Alert.alert(
+      "Delete Records",
+      `Delete ${selectedIds.length} selected record(s)?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await deleteHealthRecords(selectedIds);
+            setSelectedIds([]); 
+            setIsEditMode(false); 
+            fetchData(); 
+          }
+        }
+      ]
+    );
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
   const renderChartData = () => {
     const minAge = records.length > 0 ? Math.min(...records.map(r => r.ageInMonths || 0)) : 0;
     const generateLabel = (age: number) => {
       if (viewType === "MONTH") {
         if (age % 6 === 0) {
-          const yrs = Math.floor(age / 12); // 计算年
-          const mos = age % 12;            // 计算余下的月
-          
-          // 💡 建议使用简写（如 5y 6m），因为全称（5 YEAR, 6 MONTHS）太长会导致横坐标文字重叠
+          const yrs = Math.floor(age / 12); 
+          const mos = age % 12;            
           return `${yrs}y ${mos}m`; 
         }
         return "";
@@ -119,7 +180,6 @@ export default function Growth() {
 
     let chartLines: any[] = [];
 
-    // 1. BMI 模式下的背景线
     if (activeSegment === "BMI" && whoData) {
       const createWhoLine = (list: any[], color: string, isMain = false) => ({
         data: list.slice(minAge).map((item, i) => ({ value: item.value, label: generateLabel(minAge + i) })),
@@ -134,13 +194,12 @@ export default function Growth() {
       ];
     }
 
-    // 2. 用户数据线：关键是加上 label
     if (records.length > 0) {
       chartLines.push({
         data: records.map(r => {
           let val = 0;
           if (activeSegment === "BMI") val = r.bmiValue;
-          else if (activeSegment === "HEIGHT") val = Number(r.height); // 💡 强制转数字
+          else if (activeSegment === "HEIGHT") val = Number(r.height); 
           else val = Number(r.weight);
           return { value: val, label: generateLabel(r.ageInMonths || 0), hideDataPoints: false, dataPointColor: "#2F3A3A" };
         }),
@@ -151,8 +210,7 @@ export default function Growth() {
     return chartLines;
   };
 
-  // 💡 动态计算 Y 轴：解决 0-10 无法显示 20kg 的问题
-const getYAxisProps = () => {
+  const getYAxisProps = () => {
     if (records.length === 0) return { noOfSections: 5, stepValue: 5 };
     
     let vals = records.map(r => {
@@ -167,8 +225,8 @@ const getYAxisProps = () => {
     let padding = 5;
     
     if (activeSegment === "HEIGHT") {
-      sections = 4; // 💡 减少身高区间，防止数字重叠
-      padding = 10; // 💡 增加留白，让曲线在中间
+      sections = 4; 
+      padding = 10; 
     } else if (activeSegment === "WEIGHT") {
       sections = 4;
       padding = 6;
@@ -176,12 +234,10 @@ const getYAxisProps = () => {
       padding = 2;
     }
 
-    // 💡 计算起始坐标，身高的起始坐标取整到 5 的倍数（如 105, 110）
     const rawMin = min - padding;
     const yMin = activeSegment === "HEIGHT" ? Math.floor(rawMin / 5) * 5 : Math.max(0, Math.floor(rawMin));
     const rawMax = max + padding;
     
-    // 💡 计算步长
     const step = Math.ceil((rawMax - yMin) / sections);
 
     return {
@@ -196,7 +252,6 @@ const getYAxisProps = () => {
 
   return (
     <ScrollView className="flex-1 bg-[#FAFBF8]" contentContainerStyle={{ paddingBottom: 32 }}>
-      {/* 头部 & 导航 */}
       <View className="bg-[#4CAF7A] px-6 pt-12 pb-4 rounded-b-3xl shadow-lg">
         <View className="flex-row items-center justify-between mb-6">
           <View className="flex-row items-center gap-2">
@@ -227,7 +282,6 @@ const getYAxisProps = () => {
           <TouchableOpacity onPress={handleExport} className="flex-row items-center bg-white px-4 py-2 rounded-full border border-gray-100 shadow-sm"><Download size={14} color="#64748B" /><Text className="text-[#64748B] text-[10px] font-bold ml-1">Export</Text></TouchableOpacity>
         </View>
 
-        {/* 图表卡片 */}
         <View className="bg-white rounded-3xl p-4 shadow-lg mb-6 relative">
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-[#2F3A3A] font-bold text-lg">{activeSegment} Record</Text>
@@ -249,7 +303,7 @@ const getYAxisProps = () => {
                 rulesColor="#F1F5F9"
                 yAxisTextStyle={{ color: '#94A3B8', fontSize: 10 }}
                 xAxisLabelTextStyle={{ color: '#94A3B8', fontSize: 10, width: 50 }}
-                {...getYAxisProps()} // 💡 注入修复后的纵轴
+                {...getYAxisProps()} 
               />
             </ScrollView>
           )}
@@ -264,24 +318,148 @@ const getYAxisProps = () => {
           )}
         </View>
 
-        {/* 历史列表 */}
-        <View className="space-y-4">
+        {/* 🌟 改造的交互式历史列表：完美分成了两排 */}
+        <View className="mt-8 space-y-4"> 
+          
+          {/* 第一排：大标题 + 添加记录 */}
           <View className="flex-row justify-between items-center px-2 mb-2">
-            <Text className="text-xl font-bold text-[#2F3A3A]">{t("history")}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("index")} className="bg-[#4CAF7A] w-10 h-10 rounded-full items-center justify-center shadow-md"><Plus color="#FFFFFF" size={24} /></TouchableOpacity>
+            <Text className="text-2xl font-extrabold text-[#2F3A3A]">{t("history")}</Text>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-xs font-bold text-[#F59E0B]">Testing Child's BMI now 👉</Text>
+              <TouchableOpacity 
+                onPress={() => setShowInputModal(true)} 
+                className="bg-[#4CAF7A] w-10 h-10 rounded-full items-center justify-center shadow-md"
+              >
+                <Plus color="#FFFFFF" size={24} />
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {records.length > 0 ? records.slice().reverse().map((record) => (
-            <View key={record.id} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex-row items-center justify-between mb-3">
-              <View><Text className="text-[#7A8A8A] text-[10px] mb-1">{new Date(record.date).toLocaleDateString()}</Text><Text className="text-md font-bold text-[#2F3A3A]">{record.ageText}</Text></View>
-              <View className="items-end">
-                {activeSegment === "BMI" ? <Text className="text-[#4CAF7A] font-bold text-lg">BMI: {record.bmiValue}</Text> : (activeSegment === "HEIGHT" ? <Text className="text-[#3B82F6] font-bold text-lg">{record.height} cm</Text> : <Text className="text-[#F59E0B] font-bold text-lg">{record.weight} kg</Text>)}
-                <Text className="text-[10px] text-[#7A8A8A]">{activeSegment === "BMI" ? `${record.height}cm / ${record.weight}kg` : `BMI: ${record.bmiValue}`}</Text>
+          {/* 第二排：独立的批量管理操作栏 */}
+          <View className="mx-2 bg-white p-3 rounded-2xl shadow-sm border border-gray-100 mb-2">
+            {isEditMode ? (
+              <View className="flex-row justify-between items-center w-full">
+                
+                {/* 🌟 新增：左侧的全选/取消全选按钮 */}
+                <TouchableOpacity 
+                  onPress={() => {
+                    // 如果已经全选了，就清空选择；否则，把所有记录的 ID 都塞进选中列表
+                    if (selectedIds.length === records.length && records.length > 0) {
+                      setSelectedIds([]); 
+                    } else {
+                      setSelectedIds(records.map(r => r.id));
+                    }
+                  }} 
+                  className="flex-row items-center gap-2 pl-1"
+                  activeOpacity={0.7}
+                >
+                  {selectedIds.length === records.length && records.length > 0 ? (
+                    <CheckSquare color="#4CAF7A" size={20} />
+                  ) : (
+                    <Square color="#CBD5E1" size={20} />
+                  )}
+                  <Text className={`font-bold text-sm ${selectedIds.length === records.length && records.length > 0 ? 'text-[#4CAF7A]' : 'text-[#64748B]'}`}>
+                    Select All
+                  </Text>
+                </TouchableOpacity>
+
+                {/* 右侧：取消和删除按钮重新排布 */}
+                <View className="flex-row items-center gap-4">
+                  <TouchableOpacity onPress={() => { setIsEditMode(false); setSelectedIds([]); }}>
+                    <Text className="text-[#64748B] font-bold text-sm">Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    onPress={handleBatchDelete} 
+                    className={`px-4 py-2 rounded-xl shadow-sm flex-row items-center gap-1 ${selectedIds.length > 0 ? 'bg-[#EF4444]' : 'bg-gray-300'}`}
+                    disabled={selectedIds.length === 0}
+                  >
+                    <Trash2 color="#FFFFFF" size={14} />
+                    <Text className="text-white font-bold text-xs">({selectedIds.length})</Text>
+                  </TouchableOpacity>
+                </View>
+                
               </View>
+            ) : (
+              <View className="flex-row justify-between items-center w-full">
+                <View className="flex-row items-center gap-2 pl-1">
+                  <CheckSquare color="#64748B" size={18} />
+                  <Text className="text-[#64748B] font-bold text-sm">Manage Records</Text>
+                </View>
+                <TouchableOpacity onPress={() => setIsEditMode(true)} className="px-4 py-2 bg-gray-100 rounded-xl" activeOpacity={0.7}>
+                  <Text className="text-[#475569] font-bold text-xs">Select to Delete</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          {/* 列表渲染部分 */}
+          {records.length > 0 ? records.slice().reverse().map((record) => {
+            const isSelected = selectedIds.includes(record.id);
+
+            return (
+              <TouchableOpacity 
+                key={record.id} 
+                activeOpacity={isEditMode ? 0.7 : 1}
+                onPress={() => { if (isEditMode) toggleSelection(record.id); }}
+                className={`p-5 rounded-3xl shadow-sm flex-row items-center justify-between mb-3 border-2 ${isSelected ? 'border-[#4CAF7A] bg-[#EAF7F0]' : 'border-transparent bg-white border-b-gray-50'}`}
+              >
+                {/* 编辑模式下的 Checkbox */}
+                {isEditMode && (
+                  <View className="mr-4">
+                    {isSelected ? <CheckSquare color="#4CAF7A" size={24} /> : <Square color="#CBD5E1" size={24} />}
+                  </View>
+                )}
+
+                {/* 原始文本数据 */}
+                <View className="flex-1 flex-row items-center justify-between">
+                  <View>
+                    <Text className="text-[#7A8A8A] text-[10px] mb-1">{new Date(record.date).toLocaleDateString()}</Text>
+                    <Text className="text-md font-bold text-[#2F3A3A]">{record.ageText}</Text>
+                  </View>
+                  <View className="items-end">
+                    {activeSegment === "BMI" ? <Text className="text-[#4CAF7A] font-bold text-lg">BMI: {record.bmiValue}</Text> : (activeSegment === "HEIGHT" ? <Text className="text-[#3B82F6] font-bold text-lg">{record.height} cm</Text> : <Text className="text-[#F59E0B] font-bold text-lg">{record.weight} kg</Text>)}
+                    <Text className="text-[10px] text-[#7A8A8A]">{activeSegment === "BMI" ? `${record.height}cm / ${record.weight}kg` : `BMI: ${record.bmiValue}`}</Text>
+                  </View>
+                </View>
+
+                {/* 非编辑模式下的单条删除垃圾桶 */}
+                {!isEditMode && (
+                  <TouchableOpacity 
+                    onPress={() => handleSingleDelete(record.id)} 
+                    className="ml-4 p-2 bg-[#FEF2F2] rounded-full"
+                  >
+                    <Trash2 color="#EF4444" size={18} />
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            )
+          }) : (
+            <View className="bg-white p-10 rounded-3xl items-center border border-dashed border-gray-300">
+              <AlertCircle color="#CBD5E1" size={48} />
+              <Text className="text-[#94A3B8] mt-4">No records found.</Text>
             </View>
-          )) : <View className="bg-white p-10 rounded-3xl items-center border border-dashed border-gray-300"><AlertCircle color="#CBD5E1" size={48} /><Text className="text-[#94A3B8] mt-4">No records found.</Text></View>}
+          )}
         </View>
       </View>
+
+      {/* 挂载共用表单弹窗 */}
+      <Modal visible={showInputModal} transparent animationType="slide">
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="bg-white rounded-t-3xl pt-6 pb-8 max-h-[90%]">
+            <View className="flex-row items-center justify-between px-6 mb-2">
+              <Text className="text-xl font-bold text-[#2F3A3A]">Add Health Record</Text>
+              <TouchableOpacity onPress={() => setShowInputModal(false)} className="bg-gray-100 p-2 rounded-full">
+                <X color="#64748B" size={20} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <HealthInputForm />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 }
