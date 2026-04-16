@@ -325,7 +325,7 @@ export default function Growth() {
           <View className="flex-row justify-between items-center px-2 mb-2">
             <Text className="text-2xl font-extrabold text-[#2F3A3A]">{t("history")}</Text>
             <View className="flex-row items-center gap-2">
-              <Text className="text-xs font-bold text-[#F59E0B]">Testing Child's BMI now 👉</Text>
+              <Text className="text-xs font-bold text-[#F59E0B]">Record now 👉</Text>
               <TouchableOpacity 
                 onPress={() => setShowInputModal(true)} 
                 className="bg-[#4CAF7A] w-10 h-10 rounded-full items-center justify-center shadow-md"

@@ -694,7 +694,7 @@ export default function Home() {
               <ScrollView className="p-6">
                 <View className="flex-row items-center gap-2 mb-3">
                   <FileText color="#4CAF7A" size={18} />
-                  <Text className="text-[#4CAF7A] font-semibold text-sm">Deep Insight</Text>
+                  <Text className="text-[#4CAF7A] font-semibold text-sm">Health Insights</Text>
                 </View>
                 <Text className="text-2xl font-bold text-[#2F3A3A] mb-4 leading-tight">{selectedTopic.title}</Text>
                 
