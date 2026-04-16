@@ -24,9 +24,7 @@ import {
   ChevronUp,
   ExternalLink,
   FileText,
-  Moon,
   Search,
-  Sparkles,
   TrendingUp,
   X
 } from "lucide-react-native";
@@ -344,19 +342,6 @@ export default function Home() {
     },
   ];
 
-  const dailyTips = [
-    {
-      icon: Moon,
-      tip: t("dailyTip1"),
-      color: "#D97706",
-    },
-    {
-      icon: Activity,
-      tip: t("dailyTip2"),
-      color: "#7C3AED",
-    },
-  ];
-
   // ==========================================
   // 4. 提前返回逻辑 (必须放在所有 Hooks 之后！)
   // ==========================================
@@ -604,24 +589,6 @@ export default function Home() {
         {/* 6. 📊 统计图表区 */}
         <View className="px-6 mb-6">
           <Statistic rows={rows} />
-        </View>
-
-        {/* 8. 每日贴士 */}
-        <View className="px-6 mb-6">
-          <View className="flex-row items-center gap-2 mb-4">
-            <Sparkles color="#F59E0B" size={18} />
-            <Text className="text-lg font-semibold text-[#2F3A3A]">{t("dailyTipsTitle")}</Text>
-          </View>
-          <View className="space-y-3">
-            {dailyTips.map((item, index) => (
-              <View key={index} className="bg-white rounded-2xl shadow-md p-5 flex-row items-start gap-4">
-                <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: "#FEF3C7" }}>
-                  {index === 0 ? <Moon color={item.color} size={20} /> : <Activity color={item.color} size={20} />}
-                </View>
-                <Text className="text-[#2F3A3A] text-base flex-1 leading-relaxed pt-1.5">{item.tip}</Text>
-              </View>
-            ))}
-          </View>
         </View>
 
         {/* 9. 底部横幅 */}
