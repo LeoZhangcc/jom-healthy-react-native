@@ -15,7 +15,7 @@ export const translations = {
     chooseOption: "Choose an option",
     takePhoto: "Take a photo",
     uploadGallery: "Upload from gallery",
-    checkHealthTitle: "Check My Child's Health",
+    checkHealthTitle: "Check Child's Health",
     checkHealthSubtitle: "Quick health assessment",
     age: "Age",
     ageHint: "In years",

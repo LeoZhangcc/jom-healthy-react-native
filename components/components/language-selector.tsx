@@ -13,7 +13,7 @@ export function LanguageSelector() {
 
   const handleOpenModal = () => {
     setShowModal(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Animated.spring(scaleAnim, {
       toValue: 1,
       useNativeDriver: true,

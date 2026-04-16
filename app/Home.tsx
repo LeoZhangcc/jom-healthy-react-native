@@ -19,13 +19,11 @@ import HealthInputForm from "../components/components/HealthInputModal";
 
 import {
   Activity,
-  Baby,
   Camera,
   ChevronDown,
   ChevronUp,
   ExternalLink,
   FileText,
-  Heart,
   Moon,
   Search,
   Sparkles,
@@ -54,7 +52,8 @@ type Status = {
 };  
 
 // --- Constants ---
-const heroImage = require("../assets/images/react-logo.png");
+const heroImage = require("../assets/images/Banner.png");
+const searchImage = require("../assets/images/search.png");
 const BASE_URL = "https://jom-healthy-java.onrender.com"; 
 
 export default function Home() {
@@ -545,10 +544,19 @@ export default function Home() {
           <View className="bg-white rounded-2xl shadow-xl overflow-hidden">
             {/* 点击切换折叠状态 */}
             <TouchableOpacity onPress={() => setShowCheckForm(!showCheckForm)} className="w-full p-6 flex-row items-center gap-4">
-              <View className="w-16 h-16 bg-[#EAF7F0] rounded-2xl items-center justify-center"><Baby color="#22C55E" size={28} /></View>
+              <View className="w-12 h-12 bg-[#EAF7F0] rounded-2xl items-center justify-center">
+                <Image
+                  source={searchImage}
+                  className="w-12 h-12"
+                  resizeMode="contain"
+                /></View>
               <View className="flex-1">
-                <Text className="text-xl font-semibold text-[#2F3A3A] mb-1">{t("checkHealthTitle")}</Text>
-                <Text className="text-[#7A8A8A] text-sm">{t("checkHealthSubtitle")}</Text>
+                <Text
+                  className="text-lg font-semibold text-[#2F3A3A] mb-1"
+                  numberOfLines={1}
+                >
+                  {String(t("checkHealthTitle"))}</Text>
+                <Text className="text-[#7A8A8A] text-sm">{String(t("checkHealthSubtitle"))}</Text>
               </View>
               {showCheckForm ? <ChevronUp color="#475569" size={24} /> : <ChevronDown color="#475569" size={24} />}
             </TouchableOpacity>
@@ -563,7 +571,7 @@ export default function Home() {
         <View className="mb-8">
           <View className="px-6 flex-row items-center gap-2 mb-4">
             <TrendingUp color="#3B82F6" size={18} />
-            <Text className="text-lg font-bold text-[#2F3A3A]">Deep Insights</Text>
+            <Text className="text-lg font-bold text-[#2F3A3A]">Health Insights</Text>
           </View>
           
           {topicsLoading ? (
@@ -598,29 +606,6 @@ export default function Home() {
           <Statistic rows={rows} />
         </View>
 
-        {/* 7. 健康科普卡片 */}
-        <View className="px-6 mb-6">
-          <View className="flex-row items-center gap-2 mb-4">
-            <Heart color="#EF4444" size={18} />
-            <Text className="text-lg font-semibold text-[#2F3A3A]">{t("healthInsights")}</Text>
-          </View>
-          <View className="space-y-3">
-            {healthFacts.map((fact, index) => (
-              <View key={index} className="bg-white rounded-2xl shadow-md p-5 flex-row items-center gap-4">
-                {fact.type === "icon" ? (
-                  <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: fact.backgroundColor }}><Activity color={fact.color} size={24} /></View>
-                ) : (
-                  <Image source={{ uri: fact.imageUri }} className="w-14 h-14 rounded-xl" resizeMode="cover" />
-                )}
-                <View className="flex-1">
-                  <Text className="font-semibold text-[#2F3A3A] text-base">{fact.title}</Text>
-                  <Text className="text-[#7A8A8A] text-sm">{fact.subtitle}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-
         {/* 8. 每日贴士 */}
         <View className="px-6 mb-6">
           <View className="flex-row items-center gap-2 mb-4">
@@ -640,14 +625,22 @@ export default function Home() {
         </View>
 
         {/* 9. 底部横幅 */}
-        <View className="px-6">
-          <View className="bg-[#4CAF7A] rounded-2xl overflow-hidden shadow-lg">
-            <Image source={heroImage} className="w-full h-40" resizeMode="cover" />
-            <View className="p-5 bg-[#4CAF7A] bg-opacity-60 -mt-16">
-              <Text className="text-white font-semibold text-base text-right">{t("healthyChildrenBanner")}</Text>
+        <View className="px-6 mt-4 mb-6">
+          <View className="bg-[#4CAF7A] rounded-2xl overflow-hidden shadow-lg relative h-40">
+            <Image 
+              source={heroImage} 
+              className="absolute w-full h-full"
+              resizeMode="cover" 
+            />
+            <View className="p-5 flex-1 justify-end bg-black/40 relative z-10">
+              <Text className="text-white font-semibold text-base text-right">
+                {String(t("healthyChildrenBanner"))}
+              </Text>
             </View>
           </View>
         </View>
+
+
 
       </ScrollView>
 

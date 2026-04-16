@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 
+import { MaterialIcons } from '@expo/vector-icons';
 import { HapticTab } from '../../components/haptic-tab';
 import { IconSymbol } from '../../components/ui/icon-symbol';
 import { Colors } from '../../constants/theme';
@@ -26,7 +27,7 @@ export default function TabLayout() {
         name="growth"
         options={{
           title: 'Growth',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.bar.fill" color={color} />,
+          tabBarIcon: ({ color }) => <MaterialIcons name="insert-chart" size={28} color={color} />,
         }}
       />
     </Tabs>

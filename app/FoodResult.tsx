@@ -207,7 +207,8 @@ export default function FoodResult() {
       <View className="px-6 py-6">
         <View className="bg-white rounded-3xl shadow-xl overflow-hidden mb-6">
           <Image
-            source={{ uri: imageUri }}
+            // 👇 如果 imageUri 是 null，就自动转成 undefined，TS 就不会报错了
+            source={{ uri: imageUri || undefined }}
             className="w-full h-48"
             resizeMode="cover"
           />
